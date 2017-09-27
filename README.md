@@ -1,5 +1,7 @@
 # 常用依赖
 
+[![Build Status](https://travis-ci.org/zp25/zp-lib.svg?branch=master)](https://travis-ci.org/zp25/zp-lib)
+
 目录结构
 
 ~~~
