@@ -1,0 +1,14 @@
+language: node_js
+node_js:
+  - "7"
+cache: yarn
+script:
+  - npm run build
+  - npm test
+deploy:
+  provider: npm
+  email: zebrap25@gmail.com
+  api_key:
+    secure: rvgX5n+97rQ/Zjpkrr6DYUUfnlePpB6F668rdrPY6zaje15NVKktj8EjtFINOK7e2wcJwIiaG8wrKGYBwDXPdyyEXa444IOIMS2U9K3UYyfkiHV8zfnliKxJB/q4EuQpni7+lZEKJyRWTDfryUId1TqUQg1DTzCIc9tk/gGEWyA0eIGoDbuUHdkYR7BTxwcZtzfPw7czru43kcV1MR9cYAaOemrUQDMHkk7LQwcNk4v4yeK5rBb9n1Dbo/P3VzuPuZzP+O//bX+KlfUg77lVrP2seX2v/ZhubZT+VKEC0JH32Y0dNgK2N6eKk0ZxCw8fU12/zD2rabrYTa4ykoKy0eMJv2rXc5Q+OuoWVQGR0HGo9mMfdXtV93+uXF/oMTXnwUzghqVuSzSxS72+gYW/NiM19z7acMdemovbx9uQ4F/ol9qNsXIXPG3N+AENuJramwUNcOfBrgEkWHS1vqd/iF54VBTHU1BuORDLmQkorguw7rPTpHOtBlylX0gk5u+urNc4XujYU1jkcTI2bW9fVizUL70ZLFNvKQhDhRaekogL+poXPxhsw4zNLigQ3YGcxazAwij+EcQ8eRDmUNbAW+El5/hHSDc1VUhs6qaA/39VMU4tgcJBOhaalnuUbmjtYrSN6wMcWMtIBJFgDErx8ArDXwNFcSXUwVxyB7np/b4=
+  on:
+    branch: master
