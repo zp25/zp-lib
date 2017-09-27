@@ -1,0 +1,60 @@
+{
+  "name": "zp-lib",
+  "version": "0.0.0",
+  "description": "lib",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "scripts": {
+    "start": "rollup -c -w",
+    "build": "rollup -c",
+    "test": "cross-env BABEL_ENV=test nyc mocha --harmony --compilers js:babel-register",
+    "prejsdoc": "rimraf docs/*",
+    "jsdoc": "jsdoc -r -c jsdoc.json -d docs",
+    "open": "open docs/index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zp25/zp-lib.git"
+  },
+  "author": "zp25 <zebrap25@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "babel-polyfill": "^7.0.0-beta.1"
+  },
+  "peerDependencies": {
+    "babel-polyfill": "^7.0.0-beta.1"
+  },
+  "devDependencies": {
+    "babel-core": "^7.0.0-beta.1",
+    "babel-plugin-external-helpers": "^7.0.0-beta.1",
+    "babel-plugin-transform-runtime": "^7.0.0-beta.1",
+    "babel-preset-env": "^2.0.0-beta.1",
+    "babel-preset-stage-0": "^7.0.0-beta.1",
+    "babel-register": "^7.0.0-beta.1",
+    "babel-runtime": "^7.0.0-beta.1",
+    "chai": "^4.1.2",
+    "cross-env": "^5.0.5",
+    "cz-conventional-changelog": "^2.0.0",
+    "eslint": "^4.7.2",
+    "eslint-config-airbnb-base": "^12.0.0",
+    "eslint-plugin-import": "^2.7.0",
+    "jsdoc": "^3.5.5",
+    "jsdoc-strip-async-await": "^0.1.0",
+    "jsdom": "^11.2.0",
+    "mocha": "^3.5.3",
+    "nyc": "^11.2.1",
+    "rimraf": "^2.6.2",
+    "rollup": "^0.50.0",
+    "rollup-plugin-babel": "^3.0.2",
+    "rollup-plugin-eslint": "^4.0.0",
+    "rollup-plugin-node-resolve": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=7.0.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}
