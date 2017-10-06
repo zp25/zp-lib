@@ -24,6 +24,6 @@ export default [
         exclude: 'node_modules/**',
       }),
     ],
-    external: id => /babel-polyfill/.test(id),
+    external: id => /babel-polyfill|whatwg-fetch/.test(id),
   },
 ];

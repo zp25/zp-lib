@@ -39,3 +39,4 @@ npm run open
 
 ## 资源
 + [Template Literals](https://css-tricks.com/template-literals/ "Template Literals")
++ [The Importance Of JavaScript Abstractions When Working With Remote Data](https://css-tricks.com/importance-javascript-abstractions-working-remote-data/ "The Importance Of JavaScript Abstractions When Working With Remote Data")
