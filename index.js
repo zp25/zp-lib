@@ -1,3 +1,4 @@
+import api from './src/api';
 import {
   encodeBase64,
   decodeBase64,
@@ -7,6 +8,7 @@ import dispatch from './src/dispatch';
 import templater from './src/templater';
 
 export {
+  api,
   encodeBase64,
   decodeBase64,
   bindCustomEvent,

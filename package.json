@@ -7,10 +7,11 @@
   "scripts": {
     "start": "rollup -c -w",
     "build": "rollup -c",
-    "test": "cross-env BABEL_ENV=test nyc mocha --harmony --compilers js:babel-register",
+    "test": "cross-env BABEL_ENV=test nyc mocha --harmony --require babel-register",
     "prejsdoc": "rimraf docs/*",
     "jsdoc": "jsdoc -r -c jsdoc.json -d docs",
-    "open": "open docs/index.html"
+    "open": "open docs/index.html",
+    "serve": "node server.js"
   },
   "repository": {
     "type": "git",
@@ -19,26 +20,29 @@
   "author": "zp25 <zebrap25@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "babel-polyfill": "^7.0.0-beta.2",
+    "babel-polyfill": "^7.0.0-beta.3",
     "whatwg-fetch": "^2.0.3"
   },
   "peerDependencies": {
-    "babel-polyfill": "^7.0.0-beta.2"
+    "babel-polyfill": "^7.0.0-beta.3"
   },
   "devDependencies": {
-    "babel-core": "^7.0.0-beta.2",
-    "babel-plugin-external-helpers": "^7.0.0-beta.2",
-    "babel-plugin-transform-runtime": "^7.0.0-beta.2",
-    "babel-preset-env": "^2.0.0-beta.2",
-    "babel-preset-stage-0": "^7.0.0-beta.2",
-    "babel-register": "^7.0.0-beta.2",
-    "babel-runtime": "^7.0.0-beta.2",
+    "babel-core": "7.0.0-beta.2",
+    "babel-plugin-external-helpers": "^7.0.0-beta.3",
+    "babel-plugin-transform-runtime": "^7.0.0-beta.3",
+    "babel-preset-env": "2.0.0-beta.2",
+    "babel-preset-stage-0": "7.0.0-beta.2",
+    "babel-register": "^7.0.0-beta.3",
+    "babel-runtime": "^7.0.0-beta.3",
     "chai": "^4.1.2",
-    "cross-env": "^5.0.5",
+    "chai-as-promised": "^7.1.1",
+    "cross-env": "^5.1.0",
     "cz-conventional-changelog": "^2.0.0",
-    "eslint": "^4.8.0",
-    "eslint-config-airbnb-base": "^12.0.2",
-    "eslint-plugin-import": "^2.7.0",
+    "eslint": "^4.9.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0",
+    "fetch-mock": "^5.13.1",
+    "isomorphic-fetch": "^2.2.1",
     "jsdoc": "^3.5.5",
     "jsdoc-strip-async-await": "^0.1.0",
     "jsdom": "^11.3.0",
@@ -48,7 +52,8 @@
     "rollup": "^0.50.0",
     "rollup-plugin-babel": "^3.0.2",
     "rollup-plugin-eslint": "^4.0.0",
-    "rollup-plugin-node-resolve": "^3.0.0"
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "sinon": "^4.0.1"
   },
   "engines": {
     "node": ">=7.0.0"
@@ -57,5 +62,13 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
-  }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "chrome >= 43",
+    "safari >= 8",
+    "ios >= 8",
+    "not ie < 11"
+  ]
 }
