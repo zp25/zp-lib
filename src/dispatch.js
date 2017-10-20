@@ -20,10 +20,10 @@
  *   return {
  *     link,
  *   };
- * });
+ * };
  *
  * const clickHandlers = createClickHandlers();
- * document.body.addEventlistener('click', dispatch(clickHandlers), false);
+ * document.body.addEventListener('click', dispatch(clickHandlers), false);
  */
 
 export default handlers => (e) => {
