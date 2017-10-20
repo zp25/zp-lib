@@ -21,7 +21,6 @@ const buildAPI = () => {
   /**
    * 数据类型过滤，仅接收JSON
    * @param {Response} res - 服务器响应
-   * @return {[type]}     [description]
    * @return {(Response|Promise)}
    * @private
    */
