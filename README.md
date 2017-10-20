@@ -6,6 +6,7 @@
 
 ~~~
 +-- src
+|   +-- api.js
 |   +-- base64.js
 |   +-- bindCustomEvent.js
 |   +-- dispatch.js
@@ -14,6 +15,7 @@
 ~~~
 模块介绍
 
++ api, API Abstraction
 + base64，使用base64编码和解码字符串
 + bindCustomEvent，绑定customEvent
 + dispatch，事件代理用于事件分发
