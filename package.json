@@ -10,8 +10,7 @@
     "test": "cross-env BABEL_ENV=test nyc mocha --harmony --require babel-register",
     "prejsdoc": "rimraf docs/*",
     "jsdoc": "jsdoc -r -c jsdoc.json -d docs",
-    "open": "open docs/index.html",
-    "serve": "node server.js"
+    "open": "open docs/index.html"
   },
   "repository": {
     "type": "git",
