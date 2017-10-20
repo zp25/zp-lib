@@ -1,8 +1,100 @@
+import 'babel-polyfill/lib/core-js/modules/es6.promise';
+import 'whatwg-fetch';
 import 'babel-polyfill/lib/core-js/modules/es6.array.from';
 import 'babel-polyfill/lib/core-js/modules/es6.regexp.replace';
 import 'babel-polyfill/lib/core-js/modules/es7.object.entries';
 import 'babel-polyfill/lib/core-js/modules/es6.map';
 import 'babel-polyfill/lib/core-js/modules/es6.object.assign';
+
+/**
+ * @module api
+ * @description 接口
+ */
+var buildAPI = function buildAPI() {
+  /**
+   * 错误处理，例如404
+   * @param {Response} res - 服务器响应
+   * @return {(Response|Promise)}
+   * @private
+   */
+  var handleError = function handleError(res) {
+    var ok = res.ok,
+        statusText = res.statusText;
+    return ok ? res : Promise.reject(new Error(statusText));
+  };
+  /**
+   * 数据类型过滤，仅接收JSON
+   * @param {Response} res - 服务器响应
+   * @return {(Response|Promise)}
+   * @private
+   */
+
+
+  var handleContent = function handleContent(res) {
+    var contentType = res.headers.get('content-type');
+
+    if (/application\/json/i.test(contentType)) {
+      return res.json();
+    }
+
+    return Promise.reject(new Error('Not a JSON'));
+  };
+  /**
+   * 增
+   * @param {string} input - 请求URL
+   * @param {Object} data - 提交数据
+   * @return {Promise}
+   */
+
+
+  var post = function post(input, data) {
+    return fetch(input, {
+      method: 'POST',
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      }),
+      data: JSON.stringify(data)
+    }).then(handleError).then(handleContent);
+  };
+  /**
+   * 查
+   * @param {string} input - 请求URL
+   * @return {Promise}
+   */
+
+
+  var get = function get(input) {
+    return fetch(input, {
+      method: 'GET',
+      headers: new Headers({
+        Accept: 'application/json'
+      })
+    }).then(handleError).then(handleContent);
+  };
+  /**
+   * 改
+   * @param {string} input - 请求URL
+   * @return {Promise}
+   */
+  // const put = input => Promise.resolve('done');
+
+  /**
+   * 删
+   * @param {string} input - 请求URL
+   * @return {Promise}
+   */
+  // const del = input => Promise.resolve('done');
+
+
+  return {
+    post: post,
+    get: get // put,
+    // delete: del,
+
+  };
+};
+
+var api = buildAPI();
 
 /**
  * base64编码
@@ -61,10 +153,10 @@ var bindCustomEvent = (function (obj) {
  *   return {
  *     link,
  *   };
- * });
+ * };
  *
  * const clickHandlers = createClickHandlers();
- * document.body.addEventlistener('click', dispatch(clickHandlers), false);
+ * document.body.addEventListener('click', dispatch(clickHandlers), false);
  */
 var dispatch = (function (handlers) {
   return function (e) {
@@ -252,5 +344,5 @@ var templater = (function (strs) {
   };
 });
 
-export { encodeBase64, decodeBase64, bindCustomEvent, dispatch, templater };
+export { api, encodeBase64, decodeBase64, bindCustomEvent, dispatch, templater };
 //# sourceMappingURL=index.esm.js.map

@@ -2,11 +2,103 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
+require('babel-polyfill/lib/core-js/modules/es6.promise');
+require('whatwg-fetch');
 require('babel-polyfill/lib/core-js/modules/es6.array.from');
 require('babel-polyfill/lib/core-js/modules/es6.regexp.replace');
 require('babel-polyfill/lib/core-js/modules/es7.object.entries');
 require('babel-polyfill/lib/core-js/modules/es6.map');
 require('babel-polyfill/lib/core-js/modules/es6.object.assign');
+
+/**
+ * @module api
+ * @description 接口
+ */
+var buildAPI = function buildAPI() {
+  /**
+   * 错误处理，例如404
+   * @param {Response} res - 服务器响应
+   * @return {(Response|Promise)}
+   * @private
+   */
+  var handleError = function handleError(res) {
+    var ok = res.ok,
+        statusText = res.statusText;
+    return ok ? res : Promise.reject(new Error(statusText));
+  };
+  /**
+   * 数据类型过滤，仅接收JSON
+   * @param {Response} res - 服务器响应
+   * @return {(Response|Promise)}
+   * @private
+   */
+
+
+  var handleContent = function handleContent(res) {
+    var contentType = res.headers.get('content-type');
+
+    if (/application\/json/i.test(contentType)) {
+      return res.json();
+    }
+
+    return Promise.reject(new Error('Not a JSON'));
+  };
+  /**
+   * 增
+   * @param {string} input - 请求URL
+   * @param {Object} data - 提交数据
+   * @return {Promise}
+   */
+
+
+  var post = function post(input, data) {
+    return fetch(input, {
+      method: 'POST',
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      }),
+      data: JSON.stringify(data)
+    }).then(handleError).then(handleContent);
+  };
+  /**
+   * 查
+   * @param {string} input - 请求URL
+   * @return {Promise}
+   */
+
+
+  var get = function get(input) {
+    return fetch(input, {
+      method: 'GET',
+      headers: new Headers({
+        Accept: 'application/json'
+      })
+    }).then(handleError).then(handleContent);
+  };
+  /**
+   * 改
+   * @param {string} input - 请求URL
+   * @return {Promise}
+   */
+  // const put = input => Promise.resolve('done');
+
+  /**
+   * 删
+   * @param {string} input - 请求URL
+   * @return {Promise}
+   */
+  // const del = input => Promise.resolve('done');
+
+
+  return {
+    post: post,
+    get: get // put,
+    // delete: del,
+
+  };
+};
+
+var api = buildAPI();
 
 /**
  * base64编码
@@ -65,10 +157,10 @@ var bindCustomEvent = (function (obj) {
  *   return {
  *     link,
  *   };
- * });
+ * };
  *
  * const clickHandlers = createClickHandlers();
- * document.body.addEventlistener('click', dispatch(clickHandlers), false);
+ * document.body.addEventListener('click', dispatch(clickHandlers), false);
  */
 var dispatch = (function (handlers) {
   return function (e) {
@@ -256,6 +348,7 @@ var templater = (function (strs) {
   };
 });
 
+exports.api = api;
 exports.encodeBase64 = encodeBase64;
 exports.decodeBase64 = decodeBase64;
 exports.bindCustomEvent = bindCustomEvent;
