@@ -41,7 +41,7 @@ export default (strs, ...keys) => (data) => {
       } else if (typeof key === 'object') {
         replace = key.content(d[key.name]);
       } else {
-        replace = d[key];
+        replace = d[key] === undefined ? key : d[key];
       }
 
       return strs[i] + replace;
