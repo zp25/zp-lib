@@ -5,7 +5,16 @@
 
 import 'whatwg-fetch';
 
-const buildAPI = () => {
+/**
+ * @typedef {Object} api
+ * @property {function} post - POST方法
+ * @property {function} get - GET方法
+ */
+
+/**
+ * @return {api}
+ */
+export default (() => {
   /**
    * 错误处理，例如404
    * @param {Response} res - 服务器响应
@@ -88,6 +97,4 @@ const buildAPI = () => {
     // put,
     // delete: del,
   };
-};
-
-export default buildAPI();
+})();
