@@ -14,7 +14,17 @@ require('babel-polyfill/lib/core-js/modules/es6.object.assign');
  * @module api
  * @description 接口
  */
-var buildAPI = function buildAPI() {
+/**
+ * @typedef {Object} api
+ * @property {function} post - POST方法
+ * @property {function} get - GET方法
+ */
+
+/**
+ * @return {api}
+ */
+
+var api = (function () {
   /**
    * 错误处理，例如404
    * @param {Response} res - 服务器响应
@@ -96,9 +106,7 @@ var buildAPI = function buildAPI() {
     // delete: del,
 
   };
-};
-
-var api = buildAPI();
+})();
 
 /**
  * base64编码
@@ -127,6 +135,30 @@ var decodeBase64 = function decodeBase64(str) {
  * @module bindCustomEvent
  * @description 绑定自定义事件
  * @param {Object.<string, function>} obj - 自定义事件和处理函数映射表
+ * @example  <caption>传入自定义事件名和处理函数的映射表</caption>
+ * function customEventTrigger(type, data) {
+ *   const event = new CustomEvent(type, {
+ *     detail: data || { name: type },
+ *   });
+ *
+ *   window.dispatchEvent(event);
+ * }
+ *
+ * function eventATrigger(data) {
+ *   customEventTrigger('eventA', { data });
+ * }
+ * @example
+ * const customEvents = {
+ *   eventA: (e) => {
+ *     const { data } = e.detail;
+ *
+ *     console.log(data);
+ *   },
+ * };
+ *
+ * bindCustomEvent(customEvents);
+ *
+ * eventATrigger({ data: true });
  */
 var bindCustomEvent = (function (obj) {
   var eventMap = new Map(Object.entries(obj));
@@ -338,7 +370,7 @@ var templater = (function (strs) {
         } else if (_typeof(key) === 'object') {
           replace = key.content(d[key.name]);
         } else {
-          replace = d[key];
+          replace = d[key] === undefined ? key : d[key];
         }
 
         return strs[i] + replace;
