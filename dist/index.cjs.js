@@ -2,13 +2,28 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-require('babel-polyfill/lib/core-js/modules/es6.promise');
+require('@babel/polyfill/lib/core-js/modules/es6.promise');
 require('whatwg-fetch');
-require('babel-polyfill/lib/core-js/modules/es6.array.from');
-require('babel-polyfill/lib/core-js/modules/es6.regexp.replace');
-require('babel-polyfill/lib/core-js/modules/es7.object.entries');
-require('babel-polyfill/lib/core-js/modules/es6.map');
-require('babel-polyfill/lib/core-js/modules/es6.object.assign');
+require('@babel/polyfill/lib/core-js/modules/es6.array.from');
+require('@babel/polyfill/lib/core-js/modules/es6.regexp.replace');
+require('@babel/polyfill/lib/core-js/modules/es7.object.entries');
+require('@babel/polyfill/lib/core-js/modules/es6.map');
+require('@babel/polyfill/lib/core-js/modules/es6.function.name');
+require('@babel/polyfill/lib/core-js/modules/es6.object.assign');
+
+function _typeof(obj) {
+  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+    _typeof = function (obj) {
+      return typeof obj;
+    };
+  } else {
+    _typeof = function (obj) {
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+    };
+  }
+
+  return _typeof(obj);
+}
 
 /**
  * @module api
@@ -204,131 +219,15 @@ var dispatch = (function (handlers) {
   };
 });
 
-function _typeof(obj) {
-  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-    var _typeof = _typeof = function (obj) {
-      return typeof obj;
-    };
-  } else {
-    var _typeof = _typeof = function (obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    };
-  }
-
-  return _typeof(obj);
-}
-
-var _typeof = _typeof;
-
-
-
-
-function AwaitValue(value) {
-  this.value = value;
-}
-
-function AsyncGenerator(gen) {
-  var front, back;
-
-  function send(key, arg) {
-    return new Promise(function (resolve, reject) {
-      var request = {
-        key: key,
-        arg: arg,
-        resolve: resolve,
-        reject: reject,
-        next: null
-      };
-
-      if (back) {
-        back = back.next = request;
-      } else {
-        front = back = request;
-        resume(key, arg);
-      }
-    });
-  }
-
-  function resume(key, arg) {
-    try {
-      var result = gen[key](arg);
-      var value = result.value;
-
-      if (value instanceof AwaitValue) {
-        Promise.resolve(value.value).then(function (arg) {
-          resume("next", arg);
-        }, function (arg) {
-          resume("throw", arg);
-        });
-      } else {
-        settle(result.done ? "return" : "normal", result.value);
-      }
-    } catch (err) {
-      settle("throw", err);
-    }
-  }
-
-  function settle(type, value) {
-    switch (type) {
-      case "return":
-        front.resolve({
-          value: value,
-          done: true
-        });
-        break;
-
-      case "throw":
-        front.reject(value);
-        break;
-
-      default:
-        front.resolve({
-          value: value,
-          done: false
-        });
-        break;
-    }
-
-    front = front.next;
-
-    if (front) {
-      resume(front.key, front.arg);
-    } else {
-      back = null;
-    }
-  }
-
-  this._invoke = send;
-
-  if (typeof gen.return !== "function") {
-    this.return = undefined;
-  }
-}
-
-if (typeof Symbol === "function" && Symbol.asyncIterator) {
-  AsyncGenerator.prototype[Symbol.asyncIterator] = function () {
-    return this;
-  };
-}
-
-AsyncGenerator.prototype.next = function (arg) {
-  return this._invoke("next", arg);
-};
-
-AsyncGenerator.prototype.throw = function (arg) {
-  return this._invoke("throw", arg);
-};
-
-AsyncGenerator.prototype.return = function (arg) {
-  return this._invoke("return", arg);
-};
-
 /**
  * @module templater
  * @description 模版引擎
  * @example <caption>通过string查找</caption>
  * const template = templater`
- *   <p class="content">${'content'}</p>
+ *   <div class="content">
+ *     <p>${'content'}</p>
+ *     <p>${'nil'}</p>
+ *   </div>
  * `;
  *
  * const context = { content: 'Hello World' };
@@ -348,7 +247,49 @@ AsyncGenerator.prototype.return = function (arg) {
  *   <div class="content">${content}</div>
  * `;
  *
- * const context = { content: ['A', 'B', 'C'] };
+ * const context = { content: ['foo', 'bar', 'baz'] };
+ * const result = template(context);
+ *
+ * document.querySelector('#target').insertAdjacentHTML('beforeend', result);
+ *
+ * @example <caption>通过object查找，若function的displayName和data的key不匹配，设置{ name, content }映射关系</caption>
+ * const content = () => ({
+ *   name: 'key',
+ *   content: data => data,
+ * });
+ *
+ * const template = templater`
+ *   <p class="content">${content()}</p>
+ * `;
+ *
+ * const context = { key: 'foo' };
+ * const result = template(context);
+ *
+ * document.querySelector('#target').insertAdjacentHTML('beforeend', result);
+ *
+ * @example <caption>通过object查找的另一种用法</caption>
+ * const content = (type) => {
+ *   const foo = {
+ *     name: 'keyA',
+ *     content: data => `content A: ${data}`,
+ *   };
+ *
+ *   const bar = {
+ *     name: 'keyB',
+ *     content: data => `content B: ${data}`,
+ *   };
+ *
+ *   return type === 1 ? foo : bar;
+ * };
+ *
+ * const template = templater`
+ *   <div class="content">
+ *     <p>${content(1)}</p>
+ *     <p>${content()}</p>
+ *   </div>
+ * `;
+ *
+ * const context = { keyA: 'foo', keyB: 'bar' };
  * const result = template(context);
  *
  * document.querySelector('#target').insertAdjacentHTML('beforeend', result);
