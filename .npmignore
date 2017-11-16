@@ -12,6 +12,7 @@ yarn-error.log
 test/
 .babelrc
 .editorconfig
+.eslintignore
 .eslintrc
 .travis.yml
 index.js
