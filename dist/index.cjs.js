@@ -2,14 +2,14 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-require('@babel/polyfill/lib/core-js/modules/es6.promise');
+require('core-js/modules/es6.promise');
 require('whatwg-fetch');
-require('@babel/polyfill/lib/core-js/modules/es6.array.from');
-require('@babel/polyfill/lib/core-js/modules/es6.regexp.replace');
-require('@babel/polyfill/lib/core-js/modules/es7.object.entries');
-require('@babel/polyfill/lib/core-js/modules/es6.map');
-require('@babel/polyfill/lib/core-js/modules/es6.function.name');
-require('@babel/polyfill/lib/core-js/modules/es6.object.assign');
+require('core-js/modules/es6.array.from');
+require('core-js/modules/es6.regexp.replace');
+require('core-js/modules/es7.object.entries');
+require('core-js/modules/es6.map');
+require('core-js/modules/es6.function.name');
+require('core-js/modules/es6.object.assign');
 
 function _typeof(obj) {
   if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {

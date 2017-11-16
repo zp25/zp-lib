@@ -1,11 +1,11 @@
-import '@babel/polyfill/lib/core-js/modules/es6.promise';
+import 'core-js/modules/es6.promise';
 import 'whatwg-fetch';
-import '@babel/polyfill/lib/core-js/modules/es6.array.from';
-import '@babel/polyfill/lib/core-js/modules/es6.regexp.replace';
-import '@babel/polyfill/lib/core-js/modules/es7.object.entries';
-import '@babel/polyfill/lib/core-js/modules/es6.map';
-import '@babel/polyfill/lib/core-js/modules/es6.function.name';
-import '@babel/polyfill/lib/core-js/modules/es6.object.assign';
+import 'core-js/modules/es6.array.from';
+import 'core-js/modules/es6.regexp.replace';
+import 'core-js/modules/es7.object.entries';
+import 'core-js/modules/es6.map';
+import 'core-js/modules/es6.function.name';
+import 'core-js/modules/es6.object.assign';
 
 function _typeof(obj) {
   if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
