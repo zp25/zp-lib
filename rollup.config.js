@@ -18,13 +18,16 @@ export default [
     ],
     sourcemap: true,
     plugins: [
-      resolve(),
+      resolve({
+        module: true,
+        main: true,
+      }),
       eslint(),
       babel({
         exclude: 'node_modules/**',
-        // externalHelpers: true,
+        externalHelpers: false,
       }),
     ],
-    external: id => /@babel\/polyfill|whatwg-fetch/.test(id),
+    external: id => /@babel\/polyfill|core-js|whatwg-fetch/.test(id),
   },
 ];
