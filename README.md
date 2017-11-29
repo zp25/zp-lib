@@ -23,6 +23,23 @@
 
 示例见文档
 
+## browserslist
+browserslist配置
+
+~~~json
+{
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "chrome >= 43",
+    "safari >= 8",
+    "ios >= 8",
+    "not ie < 11"
+  ]
+}
+~~~
+浏览器支持情况
+
 ## 测试和文档
 测试和文档
 
