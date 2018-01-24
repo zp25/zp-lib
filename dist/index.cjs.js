@@ -367,7 +367,7 @@ var _invoke = function (fn, args, that) {
 var document$2 = _global.document;
 var _html = document$2 && document$2.documentElement;
 
-var process$1 = _global.process;
+var process = _global.process;
 var setTask = _global.setImmediate;
 var clearTask = _global.clearImmediate;
 var MessageChannel = _global.MessageChannel;
@@ -407,9 +407,9 @@ if (!setTask || !clearTask) {
     delete queue[id];
   };
   // Node.js 0.8-
-  if (_cof(process$1) == 'process') {
+  if (_cof(process) == 'process') {
     defer = function (id) {
-      process$1.nextTick(_ctx(run, id, 1));
+      process.nextTick(_ctx(run, id, 1));
     };
   // Sphere (JS game engine) Dispatch API
   } else if (Dispatch && Dispatch.now) {
@@ -451,16 +451,16 @@ var _task = {
 
 var macrotask = _task.set;
 var Observer = _global.MutationObserver || _global.WebKitMutationObserver;
-var process$2 = _global.process;
+var process$1 = _global.process;
 var Promise$1 = _global.Promise;
-var isNode$1 = _cof(process$2) == 'process';
+var isNode = _cof(process$1) == 'process';
 
 var _microtask = function () {
   var head, last, notify;
 
   var flush = function () {
     var parent, fn;
-    if (isNode$1 && (parent = process$2.domain)) parent.exit();
+    if (isNode && (parent = process$1.domain)) parent.exit();
     while (head) {
       fn = head.fn;
       head = head.next;
@@ -476,9 +476,9 @@ var _microtask = function () {
   };
 
   // Node.js
-  if (isNode$1) {
+  if (isNode) {
     notify = function () {
-      process$2.nextTick(flush);
+      process$1.nextTick(flush);
     };
   // browsers with MutationObserver
   } else if (Observer) {
@@ -609,15 +609,15 @@ var microtask = _microtask();
 
 var PROMISE = 'Promise';
 var TypeError$1 = _global.TypeError;
-var process = _global.process;
+var process$2 = _global.process;
 var $Promise = _global[PROMISE];
-var isNode = _classof(process) == 'process';
+var isNode$1 = _classof(process$2) == 'process';
 var empty = function () { /* empty */ };
 var Internal;
 var newGenericPromiseCapability;
 var OwnPromiseCapability;
 var Wrapper;
-var newPromiseCapability = newGenericPromiseCapability = _newPromiseCapability.f;
+var newPromiseCapability$1 = newGenericPromiseCapability = _newPromiseCapability.f;
 
 var USE_NATIVE = !!function () {
   try {
@@ -627,7 +627,7 @@ var USE_NATIVE = !!function () {
       exec(empty, empty);
     };
     // unhandled rejections tracking support, NodeJS Promise without it fails @@species test
-    return (isNode || typeof PromiseRejectionEvent == 'function') && promise.then(empty) instanceof FakePromise;
+    return (isNode$1 || typeof PromiseRejectionEvent == 'function') && promise.then(empty) instanceof FakePromise;
   } catch (e) { /* empty */ }
 }();
 
@@ -685,8 +685,8 @@ var onUnhandled = function (promise) {
     var result, handler, console;
     if (unhandled) {
       result = _perform(function () {
-        if (isNode) {
-          process.emit('unhandledRejection', value, promise);
+        if (isNode$1) {
+          process$2.emit('unhandledRejection', value, promise);
         } else if (handler = _global.onunhandledrejection) {
           handler({ promise: promise, reason: value });
         } else if ((console = _global.console) && console.error) {
@@ -694,7 +694,7 @@ var onUnhandled = function (promise) {
         }
       });
       // Browsers should not trigger `rejectionHandled` event if it was handled here, NodeJS - should
-      promise._h = isNode || isUnhandled(promise) ? 2 : 1;
+      promise._h = isNode$1 || isUnhandled(promise) ? 2 : 1;
     } promise._a = undefined;
     if (unhandled && result.e) throw result.v;
   });
@@ -712,8 +712,8 @@ var isUnhandled = function (promise) {
 var onHandleUnhandled = function (promise) {
   task.call(_global, function () {
     var handler;
-    if (isNode) {
-      process.emit('rejectionHandled', promise);
+    if (isNode$1) {
+      process$2.emit('rejectionHandled', promise);
     } else if (handler = _global.onrejectionhandled) {
       handler({ promise: promise, reason: promise._v });
     }
@@ -782,10 +782,10 @@ if (!USE_NATIVE) {
   Internal.prototype = _redefineAll($Promise.prototype, {
     // 25.4.5.3 Promise.prototype.then(onFulfilled, onRejected)
     then: function then(onFulfilled, onRejected) {
-      var reaction = newPromiseCapability(_speciesConstructor(this, $Promise));
+      var reaction = newPromiseCapability$1(_speciesConstructor(this, $Promise));
       reaction.ok = typeof onFulfilled == 'function' ? onFulfilled : true;
       reaction.fail = typeof onRejected == 'function' && onRejected;
-      reaction.domain = isNode ? process.domain : undefined;
+      reaction.domain = isNode$1 ? process$2.domain : undefined;
       this._c.push(reaction);
       if (this._a) this._a.push(reaction);
       if (this._s) notify(this, false);
@@ -802,7 +802,7 @@ if (!USE_NATIVE) {
     this.resolve = _ctx($resolve, promise, 1);
     this.reject = _ctx($reject, promise, 1);
   };
-  _newPromiseCapability.f = newPromiseCapability = function (C) {
+  _newPromiseCapability.f = newPromiseCapability$1 = function (C) {
     return C === $Promise || C === Wrapper
       ? new OwnPromiseCapability(C)
       : newGenericPromiseCapability(C);
@@ -818,7 +818,7 @@ Wrapper = _core[PROMISE];
 _export(_export.S + _export.F * !USE_NATIVE, PROMISE, {
   // 25.4.4.5 Promise.reject(r)
   reject: function reject(r) {
-    var capability = newPromiseCapability(this);
+    var capability = newPromiseCapability$1(this);
     var $$reject = capability.reject;
     $$reject(r);
     return capability.promise;
@@ -836,7 +836,7 @@ _export(_export.S + _export.F * !(USE_NATIVE && _iterDetect(function (iter) {
   // 25.4.4.1 Promise.all(iterable)
   all: function all(iterable) {
     var C = this;
-    var capability = newPromiseCapability(C);
+    var capability = newPromiseCapability$1(C);
     var resolve = capability.resolve;
     var reject = capability.reject;
     var result = _perform(function () {
@@ -863,7 +863,7 @@ _export(_export.S + _export.F * !(USE_NATIVE && _iterDetect(function (iter) {
   // 25.4.4.4 Promise.race(iterable)
   race: function race(iterable) {
     var C = this;
-    var capability = newPromiseCapability(C);
+    var capability = newPromiseCapability$1(C);
     var reject = capability.reject;
     var result = _perform(function () {
       _forOf(iterable, false, function (promise) {

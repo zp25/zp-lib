@@ -31,6 +31,7 @@ browserslist配置
   "browserslist": [
     "> 1%",
     "last 2 versions",
+    "Firefox ESR",
     "chrome >= 43",
     "safari >= 8",
     "ios >= 8",
