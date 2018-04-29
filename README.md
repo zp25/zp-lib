@@ -32,9 +32,7 @@ browserslist配置
     "> 1%",
     "last 2 versions",
     "Firefox ESR",
-    "chrome >= 43",
-    "safari >= 8",
-    "ios >= 8",
+    "chrome >= 49",
     "not ie < 11"
   ]
 }
