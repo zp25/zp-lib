@@ -1,10 +1,16 @@
 import chai from 'chai';
-import rewire from 'rewire';
-
-const searchParamsModule = rewire('../src/searchParams');
-const { default: searchParams } = searchParamsModule;
+import searchParams from '../src/searchParams';
 
 chai.should();
+
+const remove = (obj, method) => {
+  const tmp = obj[method];
+  obj[method] = undefined;
+
+  return () => {
+    obj[method] = tmp;
+  };
+};
 
 describe('searchParams', () => {
   const search = '?foo=1&bar&baz=%E5%A5%BD';
@@ -19,7 +25,7 @@ describe('searchParams', () => {
   });
 
   it ('不支持URLSearchParams也能正确转换', () => {
-    const restore = searchParamsModule.__set__('URLSearchParams', undefined);
+    const restore = remove(global, 'URLSearchParams');
 
     searchParams(search).should.eql(obj);
 
