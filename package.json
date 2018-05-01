@@ -1,6 +1,6 @@
 {
   "name": "zp-lib",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "lib",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
