@@ -35,7 +35,7 @@ describe('dispatch', () => {
   });
 
   afterEach(() => {
-    spyLink.reset();
+    spyLink.resetHistory();
   })
 
   it('正确分发事件', () => {

@@ -50,8 +50,8 @@ describe('bindCustomEvent', () => {
   });
 
   afterEach(() => {
-    spyEventA.reset();
-    spyEventB.reset();
+    spyEventA.resetHistory();
+    spyEventB.resetHistory();
   })
 
   it('正确分发事件', () => {

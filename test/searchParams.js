@@ -1,8 +1,8 @@
 import chai from 'chai';
 import rewire from 'rewire';
 
-const module = rewire('../src/searchParams');
-const { default: searchParams } = module;
+const searchParamsModule = rewire('../src/searchParams');
+const { default: searchParams } = searchParamsModule;
 
 chai.should();
 
@@ -19,7 +19,7 @@ describe('searchParams', () => {
   });
 
   it ('不支持URLSearchParams也能正确转换', () => {
-    const restore = module.__set__('URLSearchParams', undefined);
+    const restore = searchParamsModule.__set__('URLSearchParams', undefined);
 
     searchParams(search).should.eql(obj);
 
