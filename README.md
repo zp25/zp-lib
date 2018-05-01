@@ -2,23 +2,13 @@
 
 [![Build Status](https://travis-ci.org/zp25/zp-lib.svg?branch=master)](https://travis-ci.org/zp25/zp-lib)
 
-目录结构
-
-~~~
-+-- src
-|   +-- api.js
-|   +-- base64.js
-|   +-- bindCustomEvent.js
-|   +-- dispatch.js
-|   +-- templater.js
-+-- index.js
-~~~
 模块介绍
 
 + api, API Abstraction
 + base64，使用base64编码和解码字符串
 + bindCustomEvent，绑定customEvent
 + dispatch，事件代理用于事件分发
++ searchParams，返回object，存储location.search中的key-value对
 + templater，模版引擎
 
 示例见文档

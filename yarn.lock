@@ -2353,9 +2353,9 @@ jsdoc@^3.5.5:
     taffydb "2.6.2"
     underscore "~1.8.3"
 
-jsdom@^11.9.0:
-  version "11.9.0"
-  resolved "http://registry.npm.taobao.org/jsdom/download/jsdom-11.9.0.tgz#58ac6dfd248d560d736b0202d74eedad55590cd9"
+jsdom@^11.10.0:
+  version "11.10.0"
+  resolved "http://registry.npm.taobao.org/jsdom/download/jsdom-11.10.0.tgz#a42cd54e88895dc765f03f15b807a474962ac3b5"
   dependencies:
     abab "^1.0.4"
     acorn "^5.3.0"
@@ -3273,6 +3273,12 @@ ret@~0.1.10:
   version "0.1.15"
   resolved "http://registry.npm.taobao.org/ret/download/ret-0.1.15.tgz#b8a4825d5bdb1fc3f6f53c2bc33f81388681c7bc"
 
+rewire@^4.0.1:
+  version "4.0.1"
+  resolved "http://registry.npm.taobao.org/rewire/download/rewire-4.0.1.tgz#ba1100d400a9da759fe599fc6e0233f0879ed6da"
+  dependencies:
+    eslint "^4.19.1"
+
 right-align@^0.1.1:
   version "0.1.3"
   resolved "http://registry.npm.taobao.org/right-align/download/right-align-0.1.3.tgz#61339b722fe6a3515689210d24e14c96148613ef"
@@ -3296,9 +3302,9 @@ rollup-plugin-babel@^4.0.0-beta.4:
     "@babel/helper-module-imports" "7.0.0-beta.44"
     rollup-pluginutils "^2.0.1"
 
-rollup-plugin-commonjs@^9.1.0:
-  version "9.1.0"
-  resolved "http://registry.npm.taobao.org/rollup-plugin-commonjs/download/rollup-plugin-commonjs-9.1.0.tgz#468341aab32499123ee9a04b22f51d9bf26fdd94"
+rollup-plugin-commonjs@^9.1.3:
+  version "9.1.3"
+  resolved "http://registry.npm.taobao.org/rollup-plugin-commonjs/download/rollup-plugin-commonjs-9.1.3.tgz#37bfbf341292ea14f512438a56df8f9ca3ba4d67"
   dependencies:
     estree-walker "^0.5.1"
     magic-string "^0.22.4"
@@ -3412,9 +3418,9 @@ signal-exit@^3.0.0, signal-exit@^3.0.1, signal-exit@^3.0.2:
   version "3.0.2"
   resolved "http://registry.npm.taobao.org/signal-exit/download/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
 
-sinon@^4.5.0:
-  version "4.5.0"
-  resolved "http://registry.npm.taobao.org/sinon/download/sinon-4.5.0.tgz#427ae312a337d3c516804ce2754e8c0d5028cb04"
+sinon@^5.0.1:
+  version "5.0.1"
+  resolved "http://registry.npm.taobao.org/sinon/download/sinon-5.0.1.tgz#e399e00b30df53abf816f16cfc8f3aa0a480ada2"
   dependencies:
     "@sinonjs/formatio" "^2.0.0"
     diff "^3.1.0"
