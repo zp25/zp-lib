@@ -1734,22 +1734,25 @@ var dispatch = (function (handlers) {
   };
 });
 
-var dP$2 = _objectDp.f;
-var FProto = Function.prototype;
-var nameRE = /^\s*function ([^ (]*)/;
-var NAME = 'name';
-
-// 19.2.4.2 name
-NAME in FProto || _descriptors && dP$2(FProto, NAME, {
-  configurable: true,
-  get: function () {
-    try {
-      return ('' + this).match(nameRE)[1];
-    } catch (e) {
-      return '';
-    }
-  }
-});
+/**
+ * @module escapeHTML
+ * @description 转义字符串
+ * @see {@link https://stackoverflow.com/questions/1787322/htmlspecialchars-equivalent-in-javascript/4835406#4835406}
+ * @param {string} unsafe - 需转义字符串
+ * @return {string} 转义后字符串
+ */
+var escapeHTML = function escapeHTML(unsafe) {
+  var map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return unsafe.replace(/[&<>"']/g, function (m) {
+    return map[m];
+  });
+};
 
 function _typeof(obj) {
   if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
@@ -1763,6 +1766,79 @@ function _typeof(obj) {
   }
 
   return _typeof(obj);
+}
+
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+}
+
+function _slicedToArray(arr, i) {
+  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+}
+
+function _toConsumableArray(arr) {
+  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+}
+
+function _arrayWithoutHoles(arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+    return arr2;
+  }
+}
+
+function _arrayWithHoles(arr) {
+  if (Array.isArray(arr)) return arr;
+}
+
+function _iterableToArray(iter) {
+  if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+}
+
+function _iterableToArrayLimit(arr, i) {
+  var _arr = [];
+  var _n = true;
+  var _d = false;
+  var _e = undefined;
+
+  try {
+    for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+      _arr.push(_s.value);
+
+      if (i && _arr.length === i) break;
+    }
+  } catch (err) {
+    _d = true;
+    _e = err;
+  } finally {
+    try {
+      if (!_n && _i["return"] != null) _i["return"]();
+    } finally {
+      if (_d) throw _e;
+    }
+  }
+
+  return _arr;
+}
+
+function _nonIterableSpread() {
+  throw new TypeError("Invalid attempt to spread non-iterable instance");
+}
+
+function _nonIterableRest() {
+  throw new TypeError("Invalid attempt to destructure non-iterable instance");
 }
 
 var f$4 = Object.getOwnPropertySymbols;
@@ -1809,6 +1885,61 @@ var _objectAssign = !$assign || _fails(function () {
 
 
 _export(_export.S + _export.F, 'Object', { assign: _objectAssign });
+
+/**
+ * @module searchParams
+ * @description 返回object，存储location.search中的key-value对
+ * @param {string} search - location.search
+ * @return {Object}
+ * @example
+ * const params = searchParams(location.search);
+ * const { foo, bar, baz } = params;
+ */
+var searchParams = (function (search) {
+  var result = {};
+
+  if (typeof URLSearchParams === 'function') {
+    var searchParams = new URLSearchParams(search); // for (let [key, val] of searchParams) {
+    //   result = Object.assign({}, result, {
+    //     [key]: val || true,
+    //   });
+    // }
+
+    result = _toConsumableArray(searchParams).reduce(function (prev, _ref) {
+      var _ref2 = _slicedToArray(_ref, 2),
+          key = _ref2[0],
+          val = _ref2[1];
+
+      return Object.assign({}, prev, _defineProperty({}, key, val || true));
+    }, {});
+  } else {
+    var regex = /([^?&=]+)=?([^&]*)/g;
+    var a = '';
+
+    while (a = regex.exec(search)) {
+      result = Object.assign({}, result, _defineProperty({}, a[1], a[2] ? decodeURIComponent(a[2]) : true));
+    }
+  }
+
+  return result;
+});
+
+var dP$2 = _objectDp.f;
+var FProto = Function.prototype;
+var nameRE = /^\s*function ([^ (]*)/;
+var NAME = 'name';
+
+// 19.2.4.2 name
+NAME in FProto || _descriptors && dP$2(FProto, NAME, {
+  configurable: true,
+  get: function () {
+    try {
+      return ('' + this).match(nameRE)[1];
+    } catch (e) {
+      return '';
+    }
+  }
+});
 
 /**
  * @module templater
@@ -1917,5 +2048,7 @@ exports.encodeBase64 = encodeBase64;
 exports.decodeBase64 = decodeBase64;
 exports.bindCustomEvent = bindCustomEvent;
 exports.dispatch = dispatch;
+exports.escapeHTML = escapeHTML;
+exports.searchParams = searchParams;
 exports.templater = templater;
 //# sourceMappingURL=index.cjs.js.map
