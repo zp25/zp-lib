@@ -5,6 +5,8 @@ import {
 } from './src/base64';
 import bindCustomEvent from './src/bindCustomEvent';
 import dispatch from './src/dispatch';
+import escapeHTML from './src/escapeHTML';
+import searchParams from './src/searchParams';
 import templater from './src/templater';
 
 export {
@@ -13,5 +15,7 @@ export {
   decodeBase64,
   bindCustomEvent,
   dispatch,
+  escapeHTML,
+  searchParams,
   templater,
 };
