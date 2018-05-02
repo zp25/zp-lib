@@ -14,11 +14,17 @@ export default (search) => {
   if (typeof URLSearchParams === 'function') {
     const searchParams = new URLSearchParams(search);
 
-    for (let [key, val] of searchParams) {
-      result = Object.assign({}, result, {
+    // for (let [key, val] of searchParams) {
+    //   result = Object.assign({}, result, {
+    //     [key]: val || true,
+    //   });
+    // }
+
+    result = [...searchParams].reduce((prev, [key, val]) => (
+      Object.assign({}, prev, {
         [key]: val || true,
-      });
-    }
+      })
+    ), {});
   } else {
     const regex = /([^?&=]+)=?([^&]*)/g;
     let a = '';
