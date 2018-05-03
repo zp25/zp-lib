@@ -7,7 +7,10 @@ import bindCustomEvent from './src/bindCustomEvent';
 import dispatch from './src/dispatch';
 import escapeHTML from './src/escapeHTML';
 import searchParams from './src/searchParams';
-import templater from './src/templater';
+import {
+  templater,
+  templaterAsync,
+} from './src/templater';
 
 export {
   api,
@@ -18,4 +21,5 @@ export {
   escapeHTML,
   searchParams,
   templater,
+  templaterAsync,
 };

@@ -6,11 +6,15 @@
 
 + api, API Abstraction
 + base64，使用base64编码和解码字符串
+  + encodeBase64
+  + decodeBase64
 + bindCustomEvent，绑定customEvent
 + dispatch，事件代理用于事件分发
 + escapeHTML，转义字符串
 + searchParams，返回object，存储location.search中的key-value对
 + templater，模版引擎
+  + templater，同步
+  + templaterAsync，异步
 
 示例见文档
 

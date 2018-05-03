@@ -1,6 +1,11 @@
 import chai from 'chai';
-import templater from '../src/templater';
+import chaiAsPromised from 'chai-as-promised';
+import {
+  templater,
+  templaterAsync,
+} from '../src/templater';
 
+chai.use(chaiAsPromised);
 chai.should();
 
 describe('templater', () => {
@@ -64,5 +69,44 @@ describe('templater', () => {
     const result = template(context);
 
     result.should.equal(expected);
+  });
+});
+
+describe('templaterAsync', () => {
+  it('表达式为function时能正确工作', () => {
+    const expected = `
+      <div class="content"><p>Hello World!</p></div>
+    `;
+
+    const content = data => Promise.resolve(`<p>${data}</p>`);
+    content.displayName = 'content';
+
+    const template = templaterAsync`
+      <div class="content">${content}</div>
+    `;
+
+    const context = { content: 'Hello World!' };
+    const result = template(context);
+
+    return result.should.eventually.equal(expected);
+  });
+
+  it('表达式为object时能正确工作', () => {
+    const expected = `
+      <p class="content">Hello World!</p>
+    `;
+
+    const content = () => ({
+      name: 'key',
+      content: data => Promise.resolve(data),
+    });
+    const template = templaterAsync`
+      <p class="content">${content()}</p>
+    `;
+
+    const context = { key: 'Hello World!' };
+    const result = template(context);
+
+    return result.should.eventually.equal(expected);
   });
 });
