@@ -48,6 +48,7 @@ class Subject {
   /**
    * 获取观察者列表
    * @type {Array.<Observer>}
+   * @public
    */
   get observers() {
     return this._observers;
