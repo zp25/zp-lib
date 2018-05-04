@@ -7,6 +7,7 @@ import bindCustomEvent from './src/bindCustomEvent';
 import dispatch from './src/dispatch';
 import escapeHTML from './src/escapeHTML';
 import searchParams from './src/searchParams';
+import Subject from './src/subject';
 import {
   templater,
   templaterAsync,
@@ -20,6 +21,7 @@ export {
   dispatch,
   escapeHTML,
   searchParams,
+  Subject,
   templater,
   templaterAsync,
 };
