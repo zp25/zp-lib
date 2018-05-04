@@ -1,6 +1,6 @@
 {
   "name": "zp-lib",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "lib",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -22,7 +22,7 @@
     "whatwg-fetch": "^2.0.4"
   },
   "peerDependencies": {
-    "whatwg-fetch": "^2.0.3"
+    "whatwg-fetch": "^2.0.4"
   },
   "devDependencies": {
     "@babel/core": "7.0.0-beta.46",
@@ -62,9 +62,8 @@
   },
   "browserslist": [
     "> 1%",
-    "last 2 versions",
+    "last 1 version",
     "Firefox ESR",
-    "chrome >= 49",
-    "not ie < 11"
+    "chrome 49"
   ]
 }

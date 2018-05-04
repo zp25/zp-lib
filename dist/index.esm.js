@@ -1764,6 +1764,28 @@ function _typeof(obj) {
   return _typeof(obj);
 }
 
+function _classCallCheck(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+}
+
+function _defineProperties(target, props) {
+  for (var i = 0; i < props.length; i++) {
+    var descriptor = props[i];
+    descriptor.enumerable = descriptor.enumerable || false;
+    descriptor.configurable = true;
+    if ("value" in descriptor) descriptor.writable = true;
+    Object.defineProperty(target, descriptor.key, descriptor);
+  }
+}
+
+function _createClass(Constructor, protoProps, staticProps) {
+  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+  if (staticProps) _defineProperties(Constructor, staticProps);
+  return Constructor;
+}
+
 function _defineProperty(obj, key, value) {
   if (key in obj) {
     Object.defineProperty(obj, key, {
@@ -1920,13 +1942,260 @@ var searchParams = (function (search) {
   return result;
 });
 
+// 22.1.3.31 Array.prototype[@@unscopables]
+var UNSCOPABLES = _wks('unscopables');
+var ArrayProto$1 = Array.prototype;
+if (ArrayProto$1[UNSCOPABLES] == undefined) _hide(ArrayProto$1, UNSCOPABLES, {});
+var _addToUnscopables = function (key) {
+  ArrayProto$1[UNSCOPABLES][key] = true;
+};
+
+// https://github.com/tc39/Array.prototype.includes
+
+var $includes = _arrayIncludes(true);
+
+_export(_export.P, 'Array', {
+  includes: function includes(el /* , fromIndex = 0 */) {
+    return $includes(this, el, arguments.length > 1 ? arguments[1] : undefined);
+  }
+});
+
+_addToUnscopables('includes');
+
+// 7.2.8 IsRegExp(argument)
+
+
+var MATCH = _wks('match');
+var _isRegexp = function (it) {
+  var isRegExp;
+  return _isObject(it) && ((isRegExp = it[MATCH]) !== undefined ? !!isRegExp : _cof(it) == 'RegExp');
+};
+
+// helper for String#{startsWith, endsWith, includes}
+
+
+
+var _stringContext = function (that, searchString, NAME) {
+  if (_isRegexp(searchString)) throw TypeError('String#' + NAME + " doesn't accept regex!");
+  return String(_defined(that));
+};
+
+var MATCH$1 = _wks('match');
+var _failsIsRegexp = function (KEY) {
+  var re = /./;
+  try {
+    '/./'[KEY](re);
+  } catch (e) {
+    try {
+      re[MATCH$1] = false;
+      return !'/./'[KEY](re);
+    } catch (f) { /* empty */ }
+  } return true;
+};
+
+var INCLUDES = 'includes';
+
+_export(_export.P + _export.F * _failsIsRegexp(INCLUDES), 'String', {
+  includes: function includes(searchString /* , position = 0 */) {
+    return !!~_stringContext(this, searchString, INCLUDES)
+      .indexOf(searchString, arguments.length > 1 ? arguments[1] : undefined);
+  }
+});
+
+/* eslint no-underscore-dangle:0 */
+
+/**
+ * @typedef {Object} Observer
+ * @property {Function} update - 更新状态
+ */
+
+/**
+ * @class
+ * @description 被观察者
+ */
+var Subject =
+/*#__PURE__*/
+function () {
+  function Subject() {
+    _classCallCheck(this, Subject);
+
+    /**
+     * 观察者列表
+     * @type {Array.<Observer>}
+     * @private
+     */
+    this._observers = [];
+    /**
+     * 被观察者状态
+     * @type {Object}
+     * @private
+     */
+
+    this._state = {};
+  }
+  /**
+   * 绑定观察者
+   * @param {Observer} observer - 观察者对象
+   * @public
+   */
+
+
+  _createClass(Subject, [{
+    key: "attach",
+    value: function attach(observer) {
+      if (!this._observers.includes(observer)) {
+        this._observers = this._observers.concat(observer);
+      }
+    }
+    /**
+     * 解绑观察者
+     * @param {Observer} observer - 观察者对象
+     * @public
+     */
+
+  }, {
+    key: "detach",
+    value: function detach(observer) {
+      this._observers = this._observers.filter(function (o) {
+        return o !== observer;
+      });
+    }
+    /**
+     * 获取观察者列表
+     * @type {Array.<Observer>}
+     */
+
+  }, {
+    key: "notify",
+
+    /**
+     * 通知观察者状态变化
+     * @param {Object} prevState - 原状态
+     * @private
+     */
+    value: function notify(prevState) {
+      var _this = this;
+
+      this._observers.forEach(function (o) {
+        if ({}.hasOwnProperty.call(o, 'update')) {
+          o.update(_this.state, prevState);
+        }
+      });
+    }
+  }, {
+    key: "observers",
+    get: function get() {
+      return this._observers;
+    }
+    /**
+     * 获取和设置被观察者状态
+     * @type {Object}
+     * @public
+     */
+
+  }, {
+    key: "state",
+    get: function get() {
+      return Object.assign({}, this._state);
+    },
+    set: function set(newState) {
+      var prevState = Object.assign({}, this._state);
+      this._state = Object.assign({}, prevState, newState);
+      this.notify(prevState);
+    }
+  }]);
+
+  return Subject;
+}();
+
+// 22.1.3.4 Array.prototype.entries()
+// 22.1.3.13 Array.prototype.keys()
+// 22.1.3.29 Array.prototype.values()
+// 22.1.3.30 Array.prototype[@@iterator]()
+var es6_array_iterator = _iterDefine(Array, 'Array', function (iterated, kind) {
+  this._t = _toIobject(iterated); // target
+  this._i = 0;                   // next index
+  this._k = kind;                // kind
+// 22.1.5.2.1 %ArrayIteratorPrototype%.next()
+}, function () {
+  var O = this._t;
+  var kind = this._k;
+  var index = this._i++;
+  if (!O || index >= O.length) {
+    this._t = undefined;
+    return _iterStep(1);
+  }
+  if (kind == 'keys') return _iterStep(0, index);
+  if (kind == 'values') return _iterStep(0, O[index]);
+  return _iterStep(0, [index, O[index]]);
+}, 'values');
+
+// argumentsList[@@iterator] is %ArrayProto_values% (9.4.4.6, 9.4.4.7)
+_iterators.Arguments = _iterators.Array;
+
+_addToUnscopables('keys');
+_addToUnscopables('values');
+_addToUnscopables('entries');
+
+var ITERATOR$4 = _wks('iterator');
+var TO_STRING_TAG = _wks('toStringTag');
+var ArrayValues = _iterators.Array;
+
+var DOMIterables = {
+  CSSRuleList: true, // TODO: Not spec compliant, should be false.
+  CSSStyleDeclaration: false,
+  CSSValueList: false,
+  ClientRectList: false,
+  DOMRectList: false,
+  DOMStringList: false,
+  DOMTokenList: true,
+  DataTransferItemList: false,
+  FileList: false,
+  HTMLAllCollection: false,
+  HTMLCollection: false,
+  HTMLFormElement: false,
+  HTMLSelectElement: false,
+  MediaList: true, // TODO: Not spec compliant, should be false.
+  MimeTypeArray: false,
+  NamedNodeMap: false,
+  NodeList: true,
+  PaintRequestList: false,
+  Plugin: false,
+  PluginArray: false,
+  SVGLengthList: false,
+  SVGNumberList: false,
+  SVGPathSegList: false,
+  SVGPointList: false,
+  SVGStringList: false,
+  SVGTransformList: false,
+  SourceBufferList: false,
+  StyleSheetList: true, // TODO: Not spec compliant, should be false.
+  TextTrackCueList: false,
+  TextTrackList: false,
+  TouchList: false
+};
+
+for (var collections = _objectKeys(DOMIterables), i = 0; i < collections.length; i++) {
+  var NAME = collections[i];
+  var explicit = DOMIterables[NAME];
+  var Collection = _global[NAME];
+  var proto = Collection && Collection.prototype;
+  var key;
+  if (proto) {
+    if (!proto[ITERATOR$4]) _hide(proto, ITERATOR$4, ArrayValues);
+    if (!proto[TO_STRING_TAG]) _hide(proto, TO_STRING_TAG, NAME);
+    _iterators[NAME] = ArrayValues;
+    if (explicit) for (key in es6_array_iterator) if (!proto[key]) _redefine(proto, key, es6_array_iterator[key], true);
+  }
+}
+
 var dP$2 = _objectDp.f;
 var FProto = Function.prototype;
 var nameRE = /^\s*function ([^ (]*)/;
-var NAME = 'name';
+var NAME$1 = 'name';
 
 // 19.2.4.2 name
-NAME in FProto || _descriptors && dP$2(FProto, NAME, {
+NAME$1 in FProto || _descriptors && dP$2(FProto, NAME$1, {
   configurable: true,
   get: function () {
     try {
@@ -1937,6 +2206,25 @@ NAME in FProto || _descriptors && dP$2(FProto, NAME, {
   }
 });
 
+/**
+ * 转换逻辑
+ * @ignore
+ */
+var core = function core(data) {
+  return function (key) {
+    var replace = '';
+
+    if (typeof key === 'function') {
+      replace = key(data[key.displayName]);
+    } else if (_typeof(key) === 'object') {
+      replace = key.content(data[key.name]);
+    } else {
+      replace = data[key] === undefined ? key : data[key];
+    }
+
+    return replace;
+  };
+};
 /**
  * @module templater
  * @description 模版引擎
@@ -2012,32 +2300,59 @@ NAME in FProto || _descriptors && dP$2(FProto, NAME, {
  *
  * document.querySelector('#target').insertAdjacentHTML('beforeend', result);
  */
-var templater = (function (strs) {
+
+
+var templater = function templater(strs) {
   for (var _len = arguments.length, keys = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
     keys[_key - 1] = arguments[_key];
   }
 
   return function (data) {
-    var arr = Array.isArray(data) ? data.slice() : [Object.assign({}, data)];
-    var lastIndex = strs.length - 1;
-    var dataArr = arr.map(function (d) {
-      return keys.map(function (key, i) {
-        var replace = '';
-
-        if (typeof key === 'function') {
-          replace = key(d[key.displayName]);
-        } else if (_typeof(key) === 'object') {
-          replace = key.content(d[key.name]);
-        } else {
-          replace = d[key] === undefined ? key : d[key];
-        }
-
-        return strs[i] + replace;
-      }).join('') + strs[lastIndex];
+    var arr = Array.isArray(data) ? data : [data];
+    var result = arr.map(function (d) {
+      return keys.reduce(function (prev, key, i) {
+        return prev + core(d)(key) + strs[i + 1];
+      }, strs[0]);
     });
-    return dataArr.join('');
+    return result.join('');
   };
-});
+};
+/**
+ * @module templaterAsync
+ * @description 异步模版引擎，没使用async/await避免regenerator
+ * @example
+ * const content = data => Promise.resolve(`<p>${data}</p>`);
+ * content.displayName = 'content';
+ *
+ * const template = templaterAsync`
+ *   <div class="content">${content}</div>
+ * `;
+ *
+ * const context = { content: 'Hello World!' };
+ * const result = await template(context);
+ *
+ * document.querySelector('#target').insertAdjacentHTML('beforeend', result);
+ */
 
-export { api, encodeBase64, decodeBase64, bindCustomEvent, dispatch, escapeHTML, searchParams, templater };
+
+var templaterAsync = function templaterAsync(strs) {
+  for (var _len2 = arguments.length, keys = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+    keys[_key2 - 1] = arguments[_key2];
+  }
+
+  return function (data) {
+    var arr = Array.isArray(data) ? data : [data];
+    return Promise.all(arr.map(function (d) {
+      return Promise.all(keys.map(core(d))).then(function (resolved) {
+        return resolved.reduce(function (prev, r, i) {
+          return prev + r + strs[i + 1];
+        }, strs[0]);
+      });
+    })).then(function (result) {
+      return result.join('');
+    });
+  };
+}; // const templaterAsync = (strs, ...keys) => async (data) => {
+
+export { api, encodeBase64, decodeBase64, bindCustomEvent, dispatch, escapeHTML, searchParams, Subject, templater, templaterAsync };
 //# sourceMappingURL=index.esm.js.map

@@ -12,6 +12,7 @@
 + dispatch，事件代理用于事件分发
 + escapeHTML，转义字符串
 + searchParams，返回object，存储location.search中的key-value对
++ Subject，被观察者
 + templater，模版引擎
   + templater，同步
   + templaterAsync，异步
@@ -25,10 +26,9 @@ browserslist配置
 {
   "browserslist": [
     "> 1%",
-    "last 2 versions",
+    "last 1 version",
     "Firefox ESR",
-    "chrome >= 49",
-    "not ie < 11"
+    "chrome 49"
   ]
 }
 ~~~
