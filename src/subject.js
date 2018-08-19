@@ -7,7 +7,7 @@
 
 /**
  * @class
- * @description 被观察者
+ * @description 目标
  */
 class Subject {
   constructor() {
@@ -18,7 +18,7 @@ class Subject {
      */
     this._observers = [];
     /**
-     * 被观察者状态
+     * 目标状态
      * @type {Object}
      * @private
      */
@@ -55,7 +55,7 @@ class Subject {
   }
 
   /**
-   * 获取和设置被观察者状态
+   * 获取和设置目标状态
    * @type {Object}
    * @public
    */
@@ -64,7 +64,7 @@ class Subject {
   }
 
   set state(newState) {
-    const prevState = Object.assign({}, this._state);
+    const prevState = this.state;
     this._state = Object.assign({}, prevState, newState);
 
     this.notify(prevState);
