@@ -4,8 +4,7 @@
       "@babel/preset-env",
       {
         "modules": false,
-        "useBuiltIns": "usage",
-        "forceAllTransforms": true
+        "useBuiltIns": "usage"
       }
     ]
   ],
