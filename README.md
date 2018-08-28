@@ -1,5 +1,6 @@
 # 常用依赖
 
+[![npm](https://img.shields.io/npm/v/zp-lib.svg)](https://www.npmjs.com/package/zp-lib)
 [![Build Status](https://travis-ci.org/zp25/zp-lib.svg?branch=master)](https://travis-ci.org/zp25/zp-lib)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fzp25%2Fzp-lib.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fzp25%2Fzp-lib?ref=badge_shield)
 
@@ -13,7 +14,7 @@
 + dispatch，事件代理用于事件分发
 + escapeHTML，转义字符串
 + searchParams，返回object，存储location.search中的key-value对
-+ Subject，被观察者
++ Subject，观察者模式目标
 + templater，模版引擎
   + templater，同步
   + templaterAsync，异步
@@ -25,7 +26,7 @@
 
 ~~~
 last 1 version
-> 0.2%
+> 0.5%
 not dead
 ~~~
 .browserslistrc配置
