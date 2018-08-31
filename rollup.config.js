@@ -24,12 +24,12 @@ export default [
         module: true,
         main: true,
       }),
-      commonjs(),
       eslint(),
       babel({
         exclude: 'node_modules/**',
         externalHelpers: false,
       }),
+      commonjs(),
     ],
     external: id => /whatwg-fetch/.test(id),
   },
