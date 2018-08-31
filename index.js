@@ -6,6 +6,7 @@ import {
 import bindCustomEvent from './src/bindCustomEvent';
 import dispatch from './src/dispatch';
 import escapeHTML from './src/escapeHTML';
+import machine from './src/machine';
 import searchParams from './src/searchParams';
 import Subject from './src/subject';
 import {
@@ -20,6 +21,7 @@ export {
   bindCustomEvent,
   dispatch,
   escapeHTML,
+  machine,
   searchParams,
   Subject,
   templater,

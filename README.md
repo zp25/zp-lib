@@ -13,6 +13,7 @@
 + bindCustomEvent，绑定customEvent
 + dispatch，事件代理用于事件分发
 + escapeHTML，转义字符串
++ machine，有限状态机
 + searchParams，返回object，存储location.search中的key-value对
 + Subject，观察者模式目标
 + templater，模版引擎
