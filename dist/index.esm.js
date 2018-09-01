@@ -1900,6 +1900,45 @@ var escapeHTML = function escapeHTML(unsafe) {
   });
 };
 
+/**
+ * @module machine
+ * @description 有限状态机
+ * @param {Object.<string, string>} dict - 状态查询字典
+ * @return {function}
+ * @example
+ * const dict = {
+ *   start: {
+ *     MOVE: 'move',
+ *     END: 'end',
+ *   },
+ *   move: {
+ *     MOVE: 'move',
+ *     END: 'end',
+ *   },
+ *   end: {
+ *     START: 'start',
+ *   },
+ * };
+ *
+ * const transition = machine(dict);
+ *
+ * // 根据当前状态start和输入END确定输出状态
+ * const nextState = transition('start')('END');
+ */
+var machine = (function (dict) {
+  return function (currentState) {
+    return function (action) {
+      var transition = dict[currentState];
+
+      if (transition && {}.hasOwnProperty.call(transition, action)) {
+        return transition[action];
+      }
+
+      return false;
+    };
+  };
+});
+
 function _typeof(obj) {
   if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
     _typeof = function (obj) {
@@ -2416,5 +2455,5 @@ var templaterAsync = function templaterAsync(strs) {
   };
 }; // const templaterAsync = (strs, ...keys) => async (data) => {
 
-export { api, encodeBase64, decodeBase64, bindCustomEvent, dispatch, escapeHTML, searchParams, Subject, templater, templaterAsync };
+export { api, encodeBase64, decodeBase64, bindCustomEvent, dispatch, escapeHTML, machine, searchParams, Subject, templater, templaterAsync };
 //# sourceMappingURL=index.esm.js.map

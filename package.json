@@ -1,6 +1,6 @@
 {
   "name": "zp-lib",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "lib",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -41,7 +41,7 @@
     "chai-as-promised": "^7.1.1",
     "cross-env": "^5.2.0",
     "cz-conventional-changelog": "^2.1.0",
-    "eslint": "^5.4.0",
+    "eslint": "^5.5.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
     "fetch-mock": "^6.5.2",
