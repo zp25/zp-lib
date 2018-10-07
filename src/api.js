@@ -3,8 +3,6 @@
  * @description 接口
  */
 
-import 'whatwg-fetch';
-
 /**
  * @typedef {Object} api
  * @property {function} post - POST方法
@@ -64,18 +62,25 @@ export default (() => {
   /**
    * 查
    * @param {string} input - 请求URL
+   * @param {Object} init - 额外参数
+   * @param {Object} init.headers
+   * @param {string} init.mode
    * @return {Promise}
    */
-  const get = input => (
-    fetch(input, {
+  const get = (input, init = {}) => {
+    const { headers, mode = 'no-cors' } = init;
+
+    const h = new Headers(headers);
+    h.set('Accept', 'application/json');
+
+    return fetch(input, {
       method: 'GET',
-      headers: new Headers({
-        Accept: 'application/json',
-      }),
+      headers: h,
+      mode,
     })
       .then(handleError)
-      .then(handleContent)
-  );
+      .then(handleContent);
+  };
 
   /**
    * 改

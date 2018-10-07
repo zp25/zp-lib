@@ -65,16 +65,48 @@ describe('api', () => {
   });
 
   // GET
-  it('正确发送GET请求', () => {
+  it('正确发送GET请求，初始化Accept头部和mode', () => {
     const { headers, body } = response.json;
 
     const res = new Response(JSON.stringify(body), {
       status: 200,
       headers,
     });
-    fetchMock.get(`${host}/get/json`, res);
+    // func接收url和调用fetch时传入的参数
+    fetchMock.get((url, { headers, mode }) => (
+      url === `${host}/get/json`
+      && headers.get('Accept') === 'application/json'
+      && mode === 'no-cors'
+    ), res);
 
     return api.get(`${host}/get/json`).should.eventually.eql(body);
+  });
+
+  it('GET接收参数设置headers和mode，不可设置Accept头部', () => {
+    const { headers, body } = response.json;
+
+    const res = new Response(JSON.stringify(body), {
+      status: 200,
+      headers,
+    });
+    fetchMock.get((url, { headers, mode, bar }) => (
+      url === `${host}/get/json`
+      && headers.get('Accept') === 'application/json'
+      && headers.get('X-CUSTOM') === 'foo'
+      && mode === 'cors'
+      && !bar
+    ), res);
+
+    const opts = {
+      headers: {
+        'Accept': 'text/html',
+        'X-CUSTOM': 'foo',
+      },
+      mode: 'cors',
+      bar: 'baz',
+    };
+
+    return api.get(`${host}/get/json`, opts).should.eventually.eql(body);
   });
 
   it('GET请求失败(status非2xx)抛出Error', () => {

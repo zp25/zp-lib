@@ -18,49 +18,44 @@
   },
   "author": "zp25 <zebrap25@gmail.com>",
   "license": "MIT",
-  "dependencies": {
-    "whatwg-fetch": "^2.0.4"
-  },
-  "peerDependencies": {
-    "whatwg-fetch": "^2.0.4"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "@babel/core": "^7.0.0",
-    "@babel/plugin-proposal-class-properties": "^7.0.0",
-    "@babel/plugin-proposal-decorators": "^7.0.0",
+    "@babel/core": "^7.1.2",
+    "@babel/plugin-proposal-class-properties": "^7.1.0",
+    "@babel/plugin-proposal-decorators": "^7.1.2",
     "@babel/plugin-proposal-export-namespace-from": "^7.0.0",
     "@babel/plugin-proposal-json-strings": "^7.0.0",
     "@babel/plugin-proposal-throw-expressions": "^7.0.0",
     "@babel/plugin-syntax-dynamic-import": "^7.0.0",
     "@babel/plugin-syntax-import-meta": "^7.0.0",
     "@babel/polyfill": "^7.0.0",
-    "@babel/preset-env": "^7.0.0",
+    "@babel/preset-env": "^7.1.0",
     "@babel/register": "^7.0.0",
-    "babel-eslint": "^9.0.0",
-    "chai": "^4.1.2",
+    "babel-eslint": "^10.0.1",
+    "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "cross-env": "^5.2.0",
     "cz-conventional-changelog": "^2.1.0",
-    "eslint": "^5.5.0",
+    "eslint": "^5.6.1",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
-    "fetch-mock": "^6.5.2",
+    "fetch-mock": "^7.0.7",
     "isomorphic-fetch": "^2.2.1",
     "jsdoc": "^3.5.5",
     "jsdoc-strip-async-await": "^0.1.0",
-    "jsdom": "^12.0.0",
+    "jsdom": "^12.1.0",
     "mocha": "^5.2.0",
     "nyc": "^13.0.1",
     "rimraf": "^2.6.2",
-    "rollup": "^0.65.0",
-    "rollup-plugin-babel": "4.0.2",
-    "rollup-plugin-commonjs": "^9.1.6",
+    "rollup": "^0.66.4",
+    "rollup-plugin-babel": "4.0.3",
+    "rollup-plugin-commonjs": "^9.1.8",
     "rollup-plugin-eslint": "^5.0.0",
-    "rollup-plugin-node-resolve": "^3.3.0",
-    "sinon": "^6.1.5"
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "sinon": "^6.3.5"
   },
   "engines": {
-    "node": ">=8.11.4"
+    "node": ">=8.12.0"
   },
   "config": {
     "commitizen": {
