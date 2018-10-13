@@ -11,6 +11,8 @@
   + encodeBase64
   + decodeBase64
 + bindCustomEvent，绑定customEvent
++ createAction，FSA Factory，无依赖
++ createReducer，Reducer Factory，无依赖
 + dispatch，事件代理用于事件分发
 + escapeHTML，转义字符串
 + machine，有限状态机
