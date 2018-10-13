@@ -44,20 +44,42 @@ export default (() => {
   /**
    * 增
    * @param {string} input - 请求URL
-   * @param {Object} data - 提交数据
+   * @param {Object} init - 额外参数
+   * @param {Object} init.headers
+   * @param {(FormData|JSON)} init.body
+   * @param {string} init.mode
    * @return {Promise}
    */
-  const post = (input, data) => (
-    fetch(input, {
+  const post = (input, init = {}) => {
+    const {
+      headers,
+      body = '',
+      mode = 'no-cors',
+    } = init;
+
+    let data = '';
+    let mime = '';
+    if (body instanceof FormData) {
+      data = body;
+      mime = 'multipart/form-data';
+    } else {
+      data = JSON.stringify(body);
+      mime = 'application/json';
+    }
+
+    const h = new Headers(headers);
+    h.set('Content-Type', mime);
+    h.set('Accept', 'application/json');
+
+    return fetch(input, {
       method: 'POST',
-      headers: new Headers({
-        'Content-Type': 'application/json',
-      }),
-      data: JSON.stringify(data),
+      headers: h,
+      body: data,
+      mode,
     })
       .then(handleError)
-      .then(handleContent)
-  );
+      .then(handleContent);
+  };
 
   /**
    * 查

@@ -2,6 +2,7 @@ import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import 'isomorphic-fetch';
 import fetchMock from 'fetch-mock';
+import FormData from 'form-data';
 import api from '../src/api';
 
 chai.use(chaiAsPromised);
@@ -9,6 +10,13 @@ chai.should();
 
 describe('api', () => {
   const host = 'http://example.com';
+  const request = {
+    json: {
+      foo: 'foo',
+      bar: { baz: 'baz' },
+    },
+    formdata: new FormData(),
+  };
   const response = {
     json: {
       headers: new Headers({
@@ -29,21 +37,83 @@ describe('api', () => {
     },
   };
 
+  before(() => {
+    global.FormData = FormData;
+  });
+
   afterEach(() => {
     fetchMock.restore();
   });
 
   // POST
-  it('正确发送POST请求', () => {
+  it('正确发送json POST请求，初始化Accept头部和mode', () => {
+    const { json } = request;
     const { headers, body } = response.json;
 
     const res = new Response(JSON.stringify(body), {
       status: 200,
       headers,
     });
-    fetchMock.post(`${host}/post/json`, res);
+    fetchMock.post((url, { headers, body, mode }) => (
+      url === `${host}/post/json`
+      && headers.get('Content-Type') === 'application/json'
+      && headers.get('Accept') === 'application/json'
+      && body === JSON.stringify(json)
+      && mode == 'no-cors'
+    ), res);
 
-    return api.post(`${host}/post/json`).should.eventually.eql(body);
+    return api.post(`${host}/post/json`, { body: json }).should.eventually.eql(body);
+  });
+
+  it('正确发送formdata POST请求，初始化Accept头部和mode', () => {
+    const { formdata } = request;
+    const { headers, body } = response.json;
+
+    const res = new Response(JSON.stringify(body), {
+      status: 200,
+      headers,
+    });
+    fetchMock.post((url, { headers, body, mode }) => (
+      url === `${host}/post/json`
+      && headers.get('Content-Type') === 'multipart/form-data'
+      && headers.get('Accept') === 'application/json'
+      && body instanceof FormData
+      && mode == 'no-cors'
+    ), res);
+
+    return api.post(`${host}/post/json`, { body: formdata }).should.eventually.eql(body);
+  });
+
+  it('POST接收参数设置headers和mode，不可设置Accept, Content-Type头部', () => {
+    const { json } = request;
+    const { headers, body } = response.json;
+
+    const res = new Response(JSON.stringify(body), {
+      status: 200,
+      headers,
+    });
+    fetchMock.post((url, { headers, body, mode, bar }) => (
+      url === `${host}/post/json`
+      && headers.get('Content-Type') === 'application/json'
+      && headers.get('Accept') === 'application/json'
+      && headers.get('X-CUSTOM') === 'foo'
+      && body === JSON.stringify(json)
+      && mode === 'cors'
+      && !bar
+    ), res);
+
+    const opts = {
+      headers: {
+        'Accept': 'text/html',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CUSTOM': 'foo',
+      },
+      body: json,
+      mode: 'cors',
+      bar: 'baz',
+    };
+
+    return api.post(`${host}/post/json`, opts).should.eventually.eql(body);
   });
 
   it('POST请求失败(status非2xx)抛出Error', () => {
