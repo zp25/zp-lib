@@ -1913,6 +1913,69 @@ var bindCustomEvent = (function (obj) {
 });
 
 /**
+ * FSA Factory
+ * @see {@link https://github.com/acdlite/redux-actions/blob/master/src/createAction.js}
+ * @param {string} type - Action type
+ * @param {function} [payloadCreator] - payload创建函数
+ * @param {function} [metaCreator] - meta数据创建函数
+ * @return {function} Action创建函数
+ */
+var createAction = (function (type, payloadCreator, metaCreator) {
+  var finalPayloadCreator = typeof payloadCreator === 'function' ? payloadCreator : function (t) {
+    return t;
+  };
+  var hasMeta = typeof metaCreator === 'function';
+  var typeString = type.toString();
+
+  var actionCreator = function actionCreator() {
+    var payload = finalPayloadCreator.apply(void 0, arguments);
+    var action = {
+      type: type
+    };
+
+    if (payload instanceof Error) {
+      action.error = true;
+    }
+
+    if (payload !== undefined) {
+      action.payload = payload;
+    }
+
+    if (hasMeta) {
+      action.meta = metaCreator.apply(void 0, arguments);
+    }
+
+    return action;
+  };
+
+  actionCreator.toString = function () {
+    return typeString;
+  };
+
+  return actionCreator;
+});
+
+/**
+ * Reducer Factory
+ * @param {*} initState - state tree特定部分的默认值
+ * @param {Object} handlers - 处理函数映射表
+ * @return {function} Reducer
+ */
+var createReducer = (function (initState, handlers) {
+  return function () {
+    var state = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : initState;
+    var action = arguments.length > 1 ? arguments[1] : undefined;
+    var type = action.type;
+
+    if ({}.hasOwnProperty.call(handlers, type)) {
+      return handlers[type](state, action);
+    }
+
+    return state;
+  };
+});
+
+/**
  * @module dispatch
  * @description 事件分发
  * @param {Object.<string, function>} handlers - 事件处理函数组成的对象
@@ -2528,6 +2591,8 @@ exports.api = api;
 exports.encodeBase64 = encodeBase64;
 exports.decodeBase64 = decodeBase64;
 exports.bindCustomEvent = bindCustomEvent;
+exports.createAction = createAction;
+exports.createReducer = createReducer;
 exports.dispatch = dispatch;
 exports.escapeHTML = escapeHTML;
 exports.machine = machine;
