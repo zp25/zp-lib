@@ -11,11 +11,12 @@ yarn-error.log
 
 test/
 .babelrc
+.browserslistrc
 .editorconfig
 .eslintignore
 .eslintrc
 .travis.yml
-index.js
+babel.config.js
 jsdoc.json
 rollup.config.js
 yarn.lock

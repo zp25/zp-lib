@@ -2418,23 +2418,6 @@ function () {
   return Subject;
 }();
 
-var dP$2 = _objectDp.f;
-var FProto = Function.prototype;
-var nameRE = /^\s*function ([^ (]*)/;
-var NAME$1 = 'name';
-
-// 19.2.4.2 name
-NAME$1 in FProto || _descriptors && dP$2(FProto, NAME$1, {
-  configurable: true,
-  get: function () {
-    try {
-      return ('' + this).match(nameRE)[1];
-    } catch (e) {
-      return '';
-    }
-  }
-});
-
 /**
  * 转换逻辑
  * @ignore
