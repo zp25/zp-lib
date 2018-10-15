@@ -29,7 +29,8 @@
 
 ~~~
 last 1 version
-> 0.5%
+> 1%
+not IE 11
 not dead
 ~~~
 .browserslistrc配置
