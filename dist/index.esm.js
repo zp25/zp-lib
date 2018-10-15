@@ -883,13 +883,15 @@ _export(_export.S + _export.F * !(USE_NATIVE && _iterDetect(function (iter) {
  * @module api
  * @description 接口
  */
-
+var MIME_JSON = 'application/json';
+var MIME_FORMDATA = 'multipart/form-data';
 /**
  * 错误处理，例如404
  * @param {Response} res - 服务器响应
  * @return {(Response|Promise)}
  * @private
  */
+
 var handleError = function handleError(res) {
   var ok = res.ok,
       statusText = res.statusText;
@@ -913,6 +915,27 @@ var handleContent = function handleContent(res) {
   return Promise.reject(new Error('Not a JSON'));
 };
 /**
+ * 整理请求数据
+ * @param {(FormData|JSON)} body
+ * @return {Object}
+ * @private
+ */
+
+
+var reqData = function reqData(body) {
+  if (body instanceof FormData) {
+    return {
+      mime: MIME_FORMDATA,
+      data: body
+    };
+  }
+
+  return {
+    mime: MIME_JSON,
+    data: JSON.stringify(body)
+  };
+};
+/**
  * 增
  * @param {string} input - 请求URL
  * @param {Object} init - 额外参数
@@ -930,20 +953,14 @@ var post = function post(input) {
       body = _init$body === void 0 ? '' : _init$body,
       _init$mode = init.mode,
       mode = _init$mode === void 0 ? 'no-cors' : _init$mode;
-  var data = '';
-  var mime = '';
 
-  if (body instanceof FormData) {
-    data = body;
-    mime = 'multipart/form-data';
-  } else {
-    data = JSON.stringify(body);
-    mime = 'application/json';
-  }
+  var _reqData = reqData(body),
+      mime = _reqData.mime,
+      data = _reqData.data;
 
   var h = new Headers(headers);
   h.set('Content-Type', mime);
-  h.set('Accept', 'application/json');
+  h.set('Accept', MIME_JSON);
   return fetch(input, {
     method: 'POST',
     headers: h,
@@ -967,7 +984,7 @@ var get = function get(input) {
       _init$mode2 = init.mode,
       mode = _init$mode2 === void 0 ? 'no-cors' : _init$mode2;
   var h = new Headers(headers);
-  h.set('Accept', 'application/json');
+  h.set('Accept', MIME_JSON);
   return fetch(input, {
     method: 'GET',
     headers: h,
@@ -977,17 +994,60 @@ var get = function get(input) {
 /**
  * 改
  * @param {string} input - 请求URL
+ * @param {Object} init - 额外参数
+ * @param {Object} init.headers
+ * @param {(FormData|JSON)} init.body
+ * @param {string} init.mode
  * @return {Promise}
  */
-// const put = input => Promise.resolve('done');
 
+
+var put = function put(input) {
+  var init = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var headers = init.headers,
+      _init$body2 = init.body,
+      body = _init$body2 === void 0 ? '' : _init$body2,
+      _init$mode3 = init.mode,
+      mode = _init$mode3 === void 0 ? 'no-cors' : _init$mode3;
+
+  var _reqData2 = reqData(body),
+      mime = _reqData2.mime,
+      data = _reqData2.data;
+
+  var h = new Headers(headers);
+  h.set('Content-Type', mime);
+  h.set('Accept', MIME_JSON);
+  return fetch(input, {
+    method: 'PUT',
+    headers: h,
+    body: data,
+    mode: mode
+  }).then(handleError).then(handleContent);
+};
 /**
  * 删
+ * @function delete
  * @param {string} input - 请求URL
+ * @param {Object} init - 额外参数
+ * @param {Object} init.headers
+ * @param {string} init.mode
  * @return {Promise}
  */
-// const del = input => Promise.resolve('done');
 
+
+var del = function del(input) {
+  var init = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var headers = init.headers,
+      _init$mode4 = init.mode,
+      mode = _init$mode4 === void 0 ? 'no-cors' : _init$mode4;
+  var h = new Headers(headers);
+  h.set('Accept', MIME_JSON);
+  return fetch(input, {
+    method: 'DELETE',
+    headers: h,
+    mode: mode
+  }).then(handleError).then(handleContent);
+};
 /**
  * api
  * @type {Object}
@@ -997,9 +1057,9 @@ var get = function get(input) {
 
 var api = {
   post: post,
-  get: get // put,
-  // delete: del,
-
+  get: get,
+  put: put,
+  delete: del
 };
 
 // 21.2.5.3 get RegExp.prototype.flags
