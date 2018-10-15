@@ -3,6 +3,9 @@
  * @description 接口
  */
 
+const MIME_JSON = 'application/json';
+const MIME_FORMDATA = 'multipart/form-data';
+
 /**
  * 错误处理，例如404
  * @param {Response} res - 服务器响应
@@ -32,6 +35,26 @@ const handleContent = (res) => {
 };
 
 /**
+ * 整理请求数据
+ * @param {(FormData|JSON)} body
+ * @return {Object}
+ * @private
+ */
+const reqData = (body) => {
+  if (body instanceof FormData) {
+    return {
+      mime: MIME_FORMDATA,
+      data: body,
+    };
+  }
+
+  return {
+    mime: MIME_JSON,
+    data: JSON.stringify(body),
+  };
+};
+
+/**
  * 增
  * @param {string} input - 请求URL
  * @param {Object} init - 额外参数
@@ -47,19 +70,11 @@ const post = (input, init = {}) => {
     mode = 'no-cors',
   } = init;
 
-  let data = '';
-  let mime = '';
-  if (body instanceof FormData) {
-    data = body;
-    mime = 'multipart/form-data';
-  } else {
-    data = JSON.stringify(body);
-    mime = 'application/json';
-  }
+  const { mime, data } = reqData(body);
 
   const h = new Headers(headers);
   h.set('Content-Type', mime);
-  h.set('Accept', 'application/json');
+  h.set('Accept', MIME_JSON);
 
   return fetch(input, {
     method: 'POST',
@@ -83,7 +98,7 @@ const get = (input, init = {}) => {
   const { headers, mode = 'no-cors' } = init;
 
   const h = new Headers(headers);
-  h.set('Accept', 'application/json');
+  h.set('Accept', MIME_JSON);
 
   return fetch(input, {
     method: 'GET',
@@ -97,16 +112,58 @@ const get = (input, init = {}) => {
 /**
  * 改
  * @param {string} input - 请求URL
+ * @param {Object} init - 额外参数
+ * @param {Object} init.headers
+ * @param {(FormData|JSON)} init.body
+ * @param {string} init.mode
  * @return {Promise}
  */
-// const put = input => Promise.resolve('done');
+const put = (input, init = {}) => {
+  const {
+    headers,
+    body = '',
+    mode = 'no-cors',
+  } = init;
+
+  const { mime, data } = reqData(body);
+
+  const h = new Headers(headers);
+  h.set('Content-Type', mime);
+  h.set('Accept', MIME_JSON);
+
+  return fetch(input, {
+    method: 'PUT',
+    headers: h,
+    body: data,
+    mode,
+  })
+    .then(handleError)
+    .then(handleContent);
+};
 
 /**
  * 删
+ * @function delete
  * @param {string} input - 请求URL
+ * @param {Object} init - 额外参数
+ * @param {Object} init.headers
+ * @param {string} init.mode
  * @return {Promise}
  */
-// const del = input => Promise.resolve('done');
+const del = (input, init = {}) => {
+  const { headers, mode = 'no-cors' } = init;
+
+  const h = new Headers(headers);
+  h.set('Accept', MIME_JSON);
+
+  return fetch(input, {
+    method: 'DELETE',
+    headers: h,
+    mode,
+  })
+    .then(handleError)
+    .then(handleContent);
+};
 
 /**
  * api
@@ -116,8 +173,8 @@ const get = (input, init = {}) => {
 const api = {
   post,
   get,
-  // put,
-  // delete: del,
+  put,
+  delete: del,
 };
 
 export default api;
