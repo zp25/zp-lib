@@ -885,127 +885,122 @@ _export(_export.S + _export.F * !(USE_NATIVE && _iterDetect(function (iter) {
  */
 
 /**
- * @typedef {Object} api
- * @property {function} post - POST方法
- * @property {function} get - GET方法
+ * 错误处理，例如404
+ * @param {Response} res - 服务器响应
+ * @return {(Response|Promise)}
+ * @private
  */
+var handleError = function handleError(res) {
+  var ok = res.ok,
+      statusText = res.statusText;
+  return ok ? res : Promise.reject(new Error(statusText));
+};
+/**
+ * 数据类型过滤，仅接收JSON
+ * @param {Response} res - 服务器响应
+ * @return {(Response|Promise)}
+ * @private
+ */
+
+
+var handleContent = function handleContent(res) {
+  var contentType = res.headers.get('content-type');
+
+  if (/application\/json/i.test(contentType)) {
+    return res.json();
+  }
+
+  return Promise.reject(new Error('Not a JSON'));
+};
+/**
+ * 增
+ * @param {string} input - 请求URL
+ * @param {Object} init - 额外参数
+ * @param {Object} init.headers
+ * @param {(FormData|JSON)} init.body
+ * @param {string} init.mode
+ * @return {Promise}
+ */
+
+
+var post = function post(input) {
+  var init = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var headers = init.headers,
+      _init$body = init.body,
+      body = _init$body === void 0 ? '' : _init$body,
+      _init$mode = init.mode,
+      mode = _init$mode === void 0 ? 'no-cors' : _init$mode;
+  var data = '';
+  var mime = '';
+
+  if (body instanceof FormData) {
+    data = body;
+    mime = 'multipart/form-data';
+  } else {
+    data = JSON.stringify(body);
+    mime = 'application/json';
+  }
+
+  var h = new Headers(headers);
+  h.set('Content-Type', mime);
+  h.set('Accept', 'application/json');
+  return fetch(input, {
+    method: 'POST',
+    headers: h,
+    body: data,
+    mode: mode
+  }).then(handleError).then(handleContent);
+};
+/**
+ * 查
+ * @param {string} input - 请求URL
+ * @param {Object} init - 额外参数
+ * @param {Object} init.headers
+ * @param {string} init.mode
+ * @return {Promise}
+ */
+
+
+var get = function get(input) {
+  var init = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var headers = init.headers,
+      _init$mode2 = init.mode,
+      mode = _init$mode2 === void 0 ? 'no-cors' : _init$mode2;
+  var h = new Headers(headers);
+  h.set('Accept', 'application/json');
+  return fetch(input, {
+    method: 'GET',
+    headers: h,
+    mode: mode
+  }).then(handleError).then(handleContent);
+};
+/**
+ * 改
+ * @param {string} input - 请求URL
+ * @return {Promise}
+ */
+// const put = input => Promise.resolve('done');
 
 /**
- * @return {api}
+ * 删
+ * @param {string} input - 请求URL
+ * @return {Promise}
  */
-var api = (function () {
-  /**
-   * 错误处理，例如404
-   * @param {Response} res - 服务器响应
-   * @return {(Response|Promise)}
-   * @private
-   */
-  var handleError = function handleError(res) {
-    var ok = res.ok,
-        statusText = res.statusText;
-    return ok ? res : Promise.reject(new Error(statusText));
-  };
-  /**
-   * 数据类型过滤，仅接收JSON
-   * @param {Response} res - 服务器响应
-   * @return {(Response|Promise)}
-   * @private
-   */
+// const del = input => Promise.resolve('done');
+
+/**
+ * api
+ * @type {Object}
+ * @ignore
+ */
 
 
-  var handleContent = function handleContent(res) {
-    var contentType = res.headers.get('content-type');
+var api = {
+  post: post,
+  get: get // put,
+  // delete: del,
 
-    if (/application\/json/i.test(contentType)) {
-      return res.json();
-    }
-
-    return Promise.reject(new Error('Not a JSON'));
-  };
-  /**
-   * 增
-   * @param {string} input - 请求URL
-   * @param {Object} init - 额外参数
-   * @param {Object} init.headers
-   * @param {(FormData|JSON)} init.body
-   * @param {string} init.mode
-   * @return {Promise}
-   */
-
-
-  var post = function post(input) {
-    var init = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    var headers = init.headers,
-        _init$body = init.body,
-        body = _init$body === void 0 ? '' : _init$body,
-        _init$mode = init.mode,
-        mode = _init$mode === void 0 ? 'no-cors' : _init$mode;
-    var data = '';
-    var mime = '';
-
-    if (body instanceof FormData) {
-      data = body;
-      mime = 'multipart/form-data';
-    } else {
-      data = JSON.stringify(body);
-      mime = 'application/json';
-    }
-
-    var h = new Headers(headers);
-    h.set('Content-Type', mime);
-    h.set('Accept', 'application/json');
-    return fetch(input, {
-      method: 'POST',
-      headers: h,
-      body: data,
-      mode: mode
-    }).then(handleError).then(handleContent);
-  };
-  /**
-   * 查
-   * @param {string} input - 请求URL
-   * @param {Object} init - 额外参数
-   * @param {Object} init.headers
-   * @param {string} init.mode
-   * @return {Promise}
-   */
-
-
-  var get = function get(input) {
-    var init = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-    var headers = init.headers,
-        _init$mode2 = init.mode,
-        mode = _init$mode2 === void 0 ? 'no-cors' : _init$mode2;
-    var h = new Headers(headers);
-    h.set('Accept', 'application/json');
-    return fetch(input, {
-      method: 'GET',
-      headers: h,
-      mode: mode
-    }).then(handleError).then(handleContent);
-  };
-  /**
-   * 改
-   * @param {string} input - 请求URL
-   * @return {Promise}
-   */
-  // const put = input => Promise.resolve('done');
-
-  /**
-   * 删
-   * @param {string} input - 请求URL
-   * @return {Promise}
-   */
-  // const del = input => Promise.resolve('done');
-
-
-  return {
-    post: post,
-    get: get // put,
-    // delete: del,
-
-  };
-})();
+};
 
 // 21.2.5.3 get RegExp.prototype.flags
 
