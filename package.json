@@ -37,11 +37,11 @@
     "chai-as-promised": "^7.1.1",
     "cross-env": "^5.2.0",
     "cz-conventional-changelog": "^2.1.0",
-    "eslint": "^5.7.0",
+    "eslint": "^5.8.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.14.0",
-    "fetch-mock": "^7.0.7",
-    "form-data": "^2.3.2",
+    "fetch-mock": "^7.2.2",
+    "form-data": "^2.3.3",
     "isomorphic-fetch": "^2.2.1",
     "jsdoc": "^3.5.5",
     "jsdoc-strip-async-await": "^0.1.0",
@@ -54,7 +54,7 @@
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-eslint": "^5.0.0",
     "rollup-plugin-node-resolve": "^3.4.0",
-    "sinon": "^7.0.0"
+    "sinon": "^7.1.0"
   },
   "engines": {
     "node": ">=8.12.0"

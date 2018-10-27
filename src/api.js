@@ -13,9 +13,22 @@ const MIME_FORMDATA = 'multipart/form-data';
  * @private
  */
 const handleError = (res) => {
-  const { ok, statusText } = res;
+  // const { ok, statusText } = res;
+  const { ok, status } = res;
 
-  return ok ? res : Promise.reject(new Error(statusText));
+  if (ok) {
+    return res;
+  }
+
+  // status替代statusText
+  // 因为res.body有message字段描述错误，但没有status/code字段
+  const err = new Error(status);
+
+  return res.json().then((body) => {
+    err.body = body;
+
+    return Promise.reject(err);
+  });
 };
 
 /**

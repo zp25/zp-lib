@@ -28,6 +28,10 @@ describe('api', () => {
           { id: 1, text: "Plain text" },
         ],
       },
+      errbody: {
+        error: true,
+        message: 'error',
+      },
     },
     text: {
       headers: new Headers({
@@ -188,6 +192,21 @@ describe('api', () => {
       fetchMock.get(`*`, 404);
 
       return api.get(`${host}/404`).should.be.rejectedWith(Error);
+    });
+
+    it('GET请求失败(status非2xx)抛出的Error包含res.body中数据', () => {
+      const { headers, errbody } = response.json;
+
+      const res = new Response(JSON.stringify(errbody), {
+        status: 404,
+        headers,
+      });
+      fetchMock.get(`*`, res);
+
+      return api.get(`${host}/404`).catch((err) => {
+        err.message.should.equal('404');
+        err.body.should.eql(errbody);
+      });;
     });
 
     it('GET请求响应非JSON数据抛出Error', () => {
