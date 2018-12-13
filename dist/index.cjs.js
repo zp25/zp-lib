@@ -2,6 +2,170 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
+function _typeof(obj) {
+  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
+    _typeof = function (obj) {
+      return typeof obj;
+    };
+  } else {
+    _typeof = function (obj) {
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+    };
+  }
+
+  return _typeof(obj);
+}
+
+function _classCallCheck(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+}
+
+function _defineProperties(target, props) {
+  for (var i = 0; i < props.length; i++) {
+    var descriptor = props[i];
+    descriptor.enumerable = descriptor.enumerable || false;
+    descriptor.configurable = true;
+    if ("value" in descriptor) descriptor.writable = true;
+    Object.defineProperty(target, descriptor.key, descriptor);
+  }
+}
+
+function _createClass(Constructor, protoProps, staticProps) {
+  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+  if (staticProps) _defineProperties(Constructor, staticProps);
+  return Constructor;
+}
+
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+}
+
+function _objectSpread(target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i] != null ? arguments[i] : {};
+    var ownKeys = Object.keys(source);
+
+    if (typeof Object.getOwnPropertySymbols === 'function') {
+      ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) {
+        return Object.getOwnPropertyDescriptor(source, sym).enumerable;
+      }));
+    }
+
+    ownKeys.forEach(function (key) {
+      _defineProperty(target, key, source[key]);
+    });
+  }
+
+  return target;
+}
+
+function _objectWithoutPropertiesLoose(source, excluded) {
+  if (source == null) return {};
+  var target = {};
+  var sourceKeys = Object.keys(source);
+  var key, i;
+
+  for (i = 0; i < sourceKeys.length; i++) {
+    key = sourceKeys[i];
+    if (excluded.indexOf(key) >= 0) continue;
+    target[key] = source[key];
+  }
+
+  return target;
+}
+
+function _objectWithoutProperties(source, excluded) {
+  if (source == null) return {};
+
+  var target = _objectWithoutPropertiesLoose(source, excluded);
+
+  var key, i;
+
+  if (Object.getOwnPropertySymbols) {
+    var sourceSymbolKeys = Object.getOwnPropertySymbols(source);
+
+    for (i = 0; i < sourceSymbolKeys.length; i++) {
+      key = sourceSymbolKeys[i];
+      if (excluded.indexOf(key) >= 0) continue;
+      if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
+      target[key] = source[key];
+    }
+  }
+
+  return target;
+}
+
+function _slicedToArray(arr, i) {
+  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+}
+
+function _toConsumableArray(arr) {
+  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+}
+
+function _arrayWithoutHoles(arr) {
+  if (Array.isArray(arr)) {
+    for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+    return arr2;
+  }
+}
+
+function _arrayWithHoles(arr) {
+  if (Array.isArray(arr)) return arr;
+}
+
+function _iterableToArray(iter) {
+  if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+}
+
+function _iterableToArrayLimit(arr, i) {
+  var _arr = [];
+  var _n = true;
+  var _d = false;
+  var _e = undefined;
+
+  try {
+    for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+      _arr.push(_s.value);
+
+      if (i && _arr.length === i) break;
+    }
+  } catch (err) {
+    _d = true;
+    _e = err;
+  } finally {
+    try {
+      if (!_n && _i["return"] != null) _i["return"]();
+    } finally {
+      if (_d) throw _e;
+    }
+  }
+
+  return _arr;
+}
+
+function _nonIterableSpread() {
+  throw new TypeError("Invalid attempt to spread non-iterable instance");
+}
+
+function _nonIterableRest() {
+  throw new TypeError("Invalid attempt to destructure non-iterable instance");
+}
+
 var _library = false;
 
 function createCommonjsModule(fn, module) {
@@ -68,10 +232,10 @@ var store = _global[SHARED] || (_global[SHARED] = {});
 });
 });
 
-var id = 0;
+var id$1 = 0;
 var px = Math.random();
 var _uid = function (key) {
-  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
+  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id$1 + px).toString(36));
 };
 
 var _wks = createCommonjsModule(function (module) {
@@ -149,7 +313,7 @@ var _ie8DomDefine = !_descriptors && !_fails(function () {
 
 // instead of the ES6 spec version, we didn't implement @@toPrimitive case
 // and the second argument - flag - preferred type is a string
-var _toPrimitive = function (it, S) {
+var _toPrimitive$1 = function (it, S) {
   if (!_isObject(it)) return it;
   var fn, val;
   if (S && typeof (fn = it.toString) == 'function' && !_isObject(val = fn.call(it))) return val;
@@ -162,7 +326,7 @@ var dP = Object.defineProperty;
 
 var f = _descriptors ? Object.defineProperty : function defineProperty(O, P, Attributes) {
   _anObject(O);
-  P = _toPrimitive(P, true);
+  P = _toPrimitive$1(P, true);
   _anObject(Attributes);
   if (_ie8DomDefine) try {
     return dP(O, P, Attributes);
@@ -955,20 +1119,22 @@ var reqData = function reqData(body) {
  * 增
  * @param {string} input - 请求URL
  * @param {Object} init - 额外参数
- * @param {Object} init.headers
- * @param {(FormData|JSON)} init.body
- * @param {string} init.mode
+ * @param {Object} [init.headers]
+ * @param {(FormData|JSON)} [init.body]
+ * @param {string} [init.mode]
  * @return {Promise}
  */
 
 
 var post = function post(input) {
   var init = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
   var headers = init.headers,
       _init$body = init.body,
       body = _init$body === void 0 ? '' : _init$body,
       _init$mode = init.mode,
-      mode = _init$mode === void 0 ? 'no-cors' : _init$mode;
+      mode = _init$mode === void 0 ? 'no-cors' : _init$mode,
+      rest = _objectWithoutProperties(init, ["headers", "body", "mode"]);
 
   var _reqData = reqData(body),
       mime = _reqData.mime,
@@ -977,54 +1143,59 @@ var post = function post(input) {
   var h = new Headers(headers);
   h.set('Content-Type', mime);
   h.set('Accept', MIME_JSON);
-  return fetch(input, {
+  return fetch(input, _objectSpread({}, rest, {
     method: 'POST',
     headers: h,
     body: data,
     mode: mode
-  }).then(handleError).then(handleContent);
+  })).then(handleError).then(handleContent);
 };
 /**
  * 查
  * @param {string} input - 请求URL
  * @param {Object} init - 额外参数
- * @param {Object} init.headers
- * @param {string} init.mode
+ * @param {Object} [init.headers]
+ * @param {string} [init.mode]
  * @return {Promise}
  */
 
 
 var get = function get(input) {
   var init = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
   var headers = init.headers,
       _init$mode2 = init.mode,
-      mode = _init$mode2 === void 0 ? 'no-cors' : _init$mode2;
+      mode = _init$mode2 === void 0 ? 'no-cors' : _init$mode2,
+      rest = _objectWithoutProperties(init, ["headers", "mode"]);
+
   var h = new Headers(headers);
   h.set('Accept', MIME_JSON);
-  return fetch(input, {
+  return fetch(input, _objectSpread({}, rest, {
     method: 'GET',
     headers: h,
     mode: mode
-  }).then(handleError).then(handleContent);
+  })).then(handleError).then(handleContent);
 };
 /**
  * 改
  * @param {string} input - 请求URL
  * @param {Object} init - 额外参数
- * @param {Object} init.headers
- * @param {(FormData|JSON)} init.body
- * @param {string} init.mode
+ * @param {Object} [init.headers]
+ * @param {(FormData|JSON)} [init.body]
+ * @param {string} [init.mode]
  * @return {Promise}
  */
 
 
 var put = function put(input) {
   var init = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
   var headers = init.headers,
       _init$body2 = init.body,
       body = _init$body2 === void 0 ? '' : _init$body2,
       _init$mode3 = init.mode,
-      mode = _init$mode3 === void 0 ? 'no-cors' : _init$mode3;
+      mode = _init$mode3 === void 0 ? 'no-cors' : _init$mode3,
+      rest = _objectWithoutProperties(init, ["headers", "body", "mode"]);
 
   var _reqData2 = reqData(body),
       mime = _reqData2.mime,
@@ -1033,36 +1204,39 @@ var put = function put(input) {
   var h = new Headers(headers);
   h.set('Content-Type', mime);
   h.set('Accept', MIME_JSON);
-  return fetch(input, {
+  return fetch(input, _objectSpread({}, rest, {
     method: 'PUT',
     headers: h,
     body: data,
     mode: mode
-  }).then(handleError).then(handleContent);
+  })).then(handleError).then(handleContent);
 };
 /**
  * 删
  * @function delete
  * @param {string} input - 请求URL
  * @param {Object} init - 额外参数
- * @param {Object} init.headers
- * @param {string} init.mode
+ * @param {Object} [init.headers]
+ * @param {string} [init.mode]
  * @return {Promise}
  */
 
 
 var del = function del(input) {
   var init = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
   var headers = init.headers,
       _init$mode4 = init.mode,
-      mode = _init$mode4 === void 0 ? 'no-cors' : _init$mode4;
+      mode = _init$mode4 === void 0 ? 'no-cors' : _init$mode4,
+      rest = _objectWithoutProperties(init, ["headers", "mode"]);
+
   var h = new Headers(headers);
   h.set('Accept', MIME_JSON);
-  return fetch(input, {
+  return fetch(input, _objectSpread({}, rest, {
     method: 'DELETE',
     headers: h,
     mode: mode
-  }).then(handleError).then(handleContent);
+  })).then(handleError).then(handleContent);
 };
 /**
  * api
@@ -1808,7 +1982,7 @@ var gOPD = Object.getOwnPropertyDescriptor;
 
 var f$3 = _descriptors ? gOPD : function getOwnPropertyDescriptor(O, P) {
   O = _toIobject(O);
-  P = _toPrimitive(P, true);
+  P = _toPrimitive$1(P, true);
   if (_ie8DomDefine) try {
     return gOPD(O, P);
   } catch (e) { /* empty */ }
@@ -2137,115 +2311,6 @@ var machine = (function (dict) {
     };
   };
 });
-
-function _typeof(obj) {
-  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-    _typeof = function (obj) {
-      return typeof obj;
-    };
-  } else {
-    _typeof = function (obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    };
-  }
-
-  return _typeof(obj);
-}
-
-function _classCallCheck(instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-}
-
-function _defineProperties(target, props) {
-  for (var i = 0; i < props.length; i++) {
-    var descriptor = props[i];
-    descriptor.enumerable = descriptor.enumerable || false;
-    descriptor.configurable = true;
-    if ("value" in descriptor) descriptor.writable = true;
-    Object.defineProperty(target, descriptor.key, descriptor);
-  }
-}
-
-function _createClass(Constructor, protoProps, staticProps) {
-  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-  if (staticProps) _defineProperties(Constructor, staticProps);
-  return Constructor;
-}
-
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-
-  return obj;
-}
-
-function _slicedToArray(arr, i) {
-  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
-}
-
-function _toConsumableArray(arr) {
-  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
-}
-
-function _arrayWithoutHoles(arr) {
-  if (Array.isArray(arr)) {
-    for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
-
-    return arr2;
-  }
-}
-
-function _arrayWithHoles(arr) {
-  if (Array.isArray(arr)) return arr;
-}
-
-function _iterableToArray(iter) {
-  if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
-}
-
-function _iterableToArrayLimit(arr, i) {
-  var _arr = [];
-  var _n = true;
-  var _d = false;
-  var _e = undefined;
-
-  try {
-    for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-      _arr.push(_s.value);
-
-      if (i && _arr.length === i) break;
-    }
-  } catch (err) {
-    _d = true;
-    _e = err;
-  } finally {
-    try {
-      if (!_n && _i["return"] != null) _i["return"]();
-    } finally {
-      if (_d) throw _e;
-    }
-  }
-
-  return _arr;
-}
-
-function _nonIterableSpread() {
-  throw new TypeError("Invalid attempt to spread non-iterable instance");
-}
-
-function _nonIterableRest() {
-  throw new TypeError("Invalid attempt to destructure non-iterable instance");
-}
 
 var f$4 = Object.getOwnPropertySymbols;
 
