@@ -71,9 +71,9 @@ const reqData = (body) => {
  * 增
  * @param {string} input - 请求URL
  * @param {Object} init - 额外参数
- * @param {Object} init.headers
- * @param {(FormData|JSON)} init.body
- * @param {string} init.mode
+ * @param {Object} [init.headers]
+ * @param {(FormData|JSON)} [init.body]
+ * @param {string} [init.mode]
  * @return {Promise}
  */
 const post = (input, init = {}) => {
@@ -81,6 +81,7 @@ const post = (input, init = {}) => {
     headers,
     body = '',
     mode = 'no-cors',
+    ...rest
   } = init;
 
   const { mime, data } = reqData(body);
@@ -90,6 +91,7 @@ const post = (input, init = {}) => {
   h.set('Accept', MIME_JSON);
 
   return fetch(input, {
+    ...rest,
     method: 'POST',
     headers: h,
     body: data,
@@ -103,17 +105,22 @@ const post = (input, init = {}) => {
  * 查
  * @param {string} input - 请求URL
  * @param {Object} init - 额外参数
- * @param {Object} init.headers
- * @param {string} init.mode
+ * @param {Object} [init.headers]
+ * @param {string} [init.mode]
  * @return {Promise}
  */
 const get = (input, init = {}) => {
-  const { headers, mode = 'no-cors' } = init;
+  const {
+    headers,
+    mode = 'no-cors',
+    ...rest
+  } = init;
 
   const h = new Headers(headers);
   h.set('Accept', MIME_JSON);
 
   return fetch(input, {
+    ...rest,
     method: 'GET',
     headers: h,
     mode,
@@ -126,9 +133,9 @@ const get = (input, init = {}) => {
  * 改
  * @param {string} input - 请求URL
  * @param {Object} init - 额外参数
- * @param {Object} init.headers
- * @param {(FormData|JSON)} init.body
- * @param {string} init.mode
+ * @param {Object} [init.headers]
+ * @param {(FormData|JSON)} [init.body]
+ * @param {string} [init.mode]
  * @return {Promise}
  */
 const put = (input, init = {}) => {
@@ -136,6 +143,7 @@ const put = (input, init = {}) => {
     headers,
     body = '',
     mode = 'no-cors',
+    ...rest
   } = init;
 
   const { mime, data } = reqData(body);
@@ -145,6 +153,7 @@ const put = (input, init = {}) => {
   h.set('Accept', MIME_JSON);
 
   return fetch(input, {
+    ...rest,
     method: 'PUT',
     headers: h,
     body: data,
@@ -159,17 +168,22 @@ const put = (input, init = {}) => {
  * @function delete
  * @param {string} input - 请求URL
  * @param {Object} init - 额外参数
- * @param {Object} init.headers
- * @param {string} init.mode
+ * @param {Object} [init.headers]
+ * @param {string} [init.mode]
  * @return {Promise}
  */
 const del = (input, init = {}) => {
-  const { headers, mode = 'no-cors' } = init;
+  const {
+    headers,
+    mode = 'no-cors',
+    ...rest
+  } = init;
 
   const h = new Headers(headers);
   h.set('Accept', MIME_JSON);
 
   return fetch(input, {
+    ...rest,
     method: 'DELETE',
     headers: h,
     mode,

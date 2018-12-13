@@ -88,7 +88,30 @@ describe('api', () => {
       return api.post(`${host}/post/json`, { body: formdata }).should.eventually.eql(body);
     });
 
-    it('POST接收参数设置headers和mode，不可设置Accept, Content-Type头部', () => {
+    it('不可设置Accept, Content-Type头部', () => {
+      const { headers, body } = response.json;
+
+      const res = new Response(JSON.stringify(body), {
+        status: 200,
+        headers,
+      });
+      fetchMock.post((url, { headers }) => (
+        url === `${host}/post/json`
+        && headers.get('Content-Type') === 'application/json'
+        && headers.get('Accept') === 'application/json'
+      ), res);
+
+      const opts = {
+        headers: {
+          'Accept': 'text/html',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      };
+
+      return api.post(`${host}/post/json`, opts).should.eventually.eql(body);
+    });
+
+    it('可接收fetch配置，不包括method', () => {
       const { json } = request;
       const { headers, body } = response.json;
 
@@ -96,37 +119,44 @@ describe('api', () => {
         status: 200,
         headers,
       });
-      fetchMock.post((url, { headers, body, mode, bar }) => (
+      fetchMock.post((url, {
+        headers,
+        body: reqBody,
+        mode,
+        credentials,
+        bar,
+      }) => (
         url === `${host}/post/json`
         && headers.get('Content-Type') === 'application/json'
         && headers.get('Accept') === 'application/json'
         && headers.get('X-CUSTOM') === 'foo'
-        && body === JSON.stringify(json)
+        && reqBody === JSON.stringify(json)
         && mode === 'cors'
-        && !bar
+        && credentials === 'include'
+        && bar === 'baz'
       ), res);
 
       const opts = {
+        method: 'GET',
         headers: {
-          'Accept': 'text/html',
-          'Content-Type': 'application/x-www-form-urlencoded',
           'X-CUSTOM': 'foo',
         },
         body: json,
         mode: 'cors',
+        credentials: 'include',
         bar: 'baz',
       };
 
       return api.post(`${host}/post/json`, opts).should.eventually.eql(body);
     });
 
-    it('POST请求失败(status非2xx)抛出Error', () => {
+    it('请求失败(status非2xx)抛出Error', () => {
       fetchMock.post(`*`, 404);
 
       return api.post(`${host}/404`).should.be.rejectedWith(Error);
     });
 
-    it('POST请求响应非JSON数据抛出Error', () => {
+    it('请求响应非JSON数据抛出Error', () => {
       const { headers, body } = response.text;
 
       const res = new Response(JSON.stringify(body), {
@@ -161,40 +191,68 @@ describe('api', () => {
       return api.get(`${host}/get/json`).should.eventually.eql(body);
     });
 
-    it('GET接收参数设置headers和mode，不可设置Accept头部', () => {
+    it('不可设置Accept头部', () => {
       const { headers, body } = response.json;
 
       const res = new Response(JSON.stringify(body), {
         status: 200,
         headers,
       });
-      fetchMock.get((url, { headers, mode, bar }) => (
+      fetchMock.get((url, { headers }) => (
         url === `${host}/get/json`
         && headers.get('Accept') === 'application/json'
-        && headers.get('X-CUSTOM') === 'foo'
-        && mode === 'cors'
-        && !bar
       ), res);
 
       const opts = {
         headers: {
           'Accept': 'text/html',
+        },
+      };
+
+      return api.get(`${host}/get/json`, opts).should.eventually.eql(body);
+    });
+
+    it('可接收fetch配置，不包括method', () => {
+      const { headers, body } = response.json;
+
+      const res = new Response(JSON.stringify(body), {
+        status: 200,
+        headers,
+      });
+      fetchMock.get((url, {
+        headers,
+        mode,
+        credentials,
+        bar,
+      }) => (
+        url === `${host}/get/json`
+        && headers.get('Accept') === 'application/json'
+        && headers.get('X-CUSTOM') === 'foo'
+        && mode === 'cors'
+        && credentials === 'include'
+        && bar === 'baz'
+      ), res);
+
+      const opts = {
+        method: 'PUT',
+        headers: {
           'X-CUSTOM': 'foo',
         },
         mode: 'cors',
+        credentials: 'include',
         bar: 'baz',
       };
 
       return api.get(`${host}/get/json`, opts).should.eventually.eql(body);
     });
 
-    it('GET请求失败(status非2xx)抛出Error', () => {
+    it('请求失败(status非2xx)抛出Error', () => {
       fetchMock.get(`*`, 404);
 
       return api.get(`${host}/404`).should.be.rejectedWith(Error);
     });
 
-    it('GET请求失败(status非2xx)抛出的Error包含res.body中数据', () => {
+    it('请求失败(status非2xx)抛出的Error包含res.body中数据', () => {
       const { headers, errbody } = response.json;
 
       const res = new Response(JSON.stringify(errbody), {
@@ -209,7 +267,7 @@ describe('api', () => {
       });;
     });
 
-    it('GET请求响应非JSON数据抛出Error', () => {
+    it('请求响应非JSON数据抛出Error', () => {
       const { headers, body } = response.text;
 
       const res = new Response(JSON.stringify(body), {
@@ -269,7 +327,30 @@ describe('api', () => {
       return api.put(`${host}/put/json`, { body: formdata }).should.eventually.eql(body);
     });
 
-    it('PUT接收参数设置headers和mode，不可设置Accept, Content-Type头部', () => {
+    it('不可设置Accept, Content-Type头部', () => {
+      const { headers, body } = response.json;
+
+      const res = new Response(JSON.stringify(body), {
+        status: 200,
+        headers,
+      });
+      fetchMock.put((url, { headers }) => (
+        url === `${host}/put/json`
+        && headers.get('Content-Type') === 'application/json'
+        && headers.get('Accept') === 'application/json'
+      ), res);
+
+      const opts = {
+        headers: {
+          'Accept': 'text/html',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      };
+
+      return api.put(`${host}/put/json`, opts).should.eventually.eql(body);
+    });
+
+    it('可接收fetch配置，不包括method', () => {
       const { json } = request;
       const { headers, body } = response.json;
 
@@ -277,37 +358,44 @@ describe('api', () => {
         status: 200,
         headers,
       });
-      fetchMock.put((url, { headers, body, mode, bar }) => (
+      fetchMock.put((url, {
+        headers,
+        body: reqBody,
+        mode,
+        credentials,
+        bar,
+      }) => (
         url === `${host}/put/json`
         && headers.get('Content-Type') === 'application/json'
         && headers.get('Accept') === 'application/json'
         && headers.get('X-CUSTOM') === 'foo'
-        && body === JSON.stringify(json)
+        && reqBody === JSON.stringify(json)
         && mode === 'cors'
-        && !bar
+        && credentials === 'include'
+        && bar === 'baz'
       ), res);
 
       const opts = {
+        method: 'POST',
         headers: {
-          'Accept': 'text/html',
-          'Content-Type': 'application/x-www-form-urlencoded',
           'X-CUSTOM': 'foo',
         },
         body: json,
         mode: 'cors',
+        credentials: 'include',
         bar: 'baz',
       };
 
       return api.put(`${host}/put/json`, opts).should.eventually.eql(body);
     });
 
-    it('PUT请求失败(status非2xx)抛出Error', () => {
+    it('请求失败(status非2xx)抛出Error', () => {
       fetchMock.put(`*`, 404);
 
       return api.put(`${host}/404`).should.be.rejectedWith(Error);
     });
 
-    it('PUT请求响应非JSON数据抛出Error', () => {
+    it('请求响应非JSON数据抛出Error', () => {
       const { headers, body } = response.text;
 
       const res = new Response(JSON.stringify(body), {
@@ -342,40 +430,68 @@ describe('api', () => {
       return api.delete(`${host}/delete/json`).should.eventually.eql(body);
     });
 
-    it('DELETE接收参数设置headers和mode，不可设置Accept头部', () => {
+    it('不可设置Accept头部', () => {
       const { headers, body } = response.json;
 
       const res = new Response(JSON.stringify(body), {
         status: 200,
         headers,
       });
-      fetchMock.delete((url, { headers, mode, bar }) => (
+      fetchMock.delete((url, { headers }) => (
         url === `${host}/delete/json`
         && headers.get('Accept') === 'application/json'
-        && headers.get('X-CUSTOM') === 'foo'
-        && mode === 'cors'
-        && !bar
       ), res);
 
       const opts = {
         headers: {
           'Accept': 'text/html',
+        },
+      };
+
+      return api.delete(`${host}/delete/json`, opts).should.eventually.eql(body);
+    });
+
+    it('可接收fetch配置，不包括method', () => {
+      const { headers, body } = response.json;
+
+      const res = new Response(JSON.stringify(body), {
+        status: 200,
+        headers,
+      });
+      fetchMock.delete((url, {
+        headers,
+        mode,
+        credentials,
+        bar,
+      }) => (
+        url === `${host}/delete/json`
+        && headers.get('Accept') === 'application/json'
+        && headers.get('X-CUSTOM') === 'foo'
+        && mode === 'cors'
+        && credentials === 'include'
+        && bar === 'baz'
+      ), res);
+
+      const opts = {
+        method: 'GET',
+        headers: {
           'X-CUSTOM': 'foo',
         },
         mode: 'cors',
+        credentials: 'include',
         bar: 'baz',
       };
 
       return api.delete(`${host}/delete/json`, opts).should.eventually.eql(body);
     });
 
-    it('DELETE请求失败(status非2xx)抛出Error', () => {
+    it('请求失败(status非2xx)抛出Error', () => {
       fetchMock.delete(`*`, 404);
 
       return api.delete(`${host}/404`).should.be.rejectedWith(Error);
     });
 
-    it('DELETE请求响应非JSON数据抛出Error', () => {
+    it('请求响应非JSON数据抛出Error', () => {
       const { headers, body } = response.text;
 
       const res = new Response(JSON.stringify(body), {
