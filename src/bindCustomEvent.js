@@ -32,6 +32,6 @@ export default (obj) => {
   const eventMap = new Map(Object.entries(obj));
 
   eventMap.forEach((handler, event) => {
-    window.addEventListener(event, handler, false);
+    document.addEventListener(event, handler, false);
   });
 };
