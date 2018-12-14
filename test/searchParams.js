@@ -5,10 +5,10 @@ chai.should();
 
 const remove = (obj, method) => {
   const tmp = obj[method];
-  obj[method] = undefined;
+  obj[method] = undefined; // eslint-disable-line no-param-reassign
 
   return () => {
-    obj[method] = tmp;
+    obj[method] = tmp; // eslint-disable-line no-param-reassign
   };
 };
 
@@ -20,11 +20,11 @@ describe('searchParams', () => {
     baz: '好',
   };
 
-  it ('返回object，存储location.search中的key-value对', () => {
+  it('返回object，存储location.search中的key-value对', () => {
     searchParams(search).should.eql(obj);
   });
 
-  it ('不支持URLSearchParams也能正确转换', () => {
+  it('不支持URLSearchParams也能正确转换', () => {
     const restore = remove(global, 'URLSearchParams');
 
     searchParams(search).should.eql(obj);

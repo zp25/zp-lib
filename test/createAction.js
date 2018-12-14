@@ -51,5 +51,5 @@ describe('createAction', () => {
     const action = createAction(type);
 
     action.toString().should.equal(type);
-  })
+  });
 });

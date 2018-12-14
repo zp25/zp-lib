@@ -1,3 +1,5 @@
+/* eslint no-unused-expressions: 0 */
+
 import chai from 'chai';
 import { JSDOM } from 'jsdom';
 import sinon from 'sinon';
@@ -19,13 +21,17 @@ describe('bindCustomEvent', () => {
   const spyEventB = sinon.spy();
 
   let eventATrigger = null;
-  let eventBTrigger = null;
+  let eventBTrigger = null; // eslint-disable-line no-unused-vars
 
   before(() => {
-    const window = new JSDOM(domStr).window;
-    global.window = window;
+    const {
+      window: {
+        CustomEvent,
+        document,
+      },
+    } = new JSDOM(domStr);
 
-    const CustomEvent = window.CustomEvent;
+    global.document = document;
 
     /**
      * 触发自定义事件
@@ -37,14 +43,14 @@ describe('bindCustomEvent', () => {
         detail: data || { name: type },
       });
 
-      window.dispatchEvent(event);
+      document.dispatchEvent(event);
     }
 
     eventATrigger = (data) => {
       customEventTrigger('eventA', { data });
     };
 
-    eventBTrigger = (data) => {
+    eventBTrigger = () => {
       customEventTrigger('eventB');
     };
   });
@@ -52,7 +58,7 @@ describe('bindCustomEvent', () => {
   afterEach(() => {
     spyEventA.resetHistory();
     spyEventB.resetHistory();
-  })
+  });
 
   it('正确分发事件', () => {
     const customEvents = {

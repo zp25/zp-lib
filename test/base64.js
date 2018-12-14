@@ -21,7 +21,7 @@ describe('base64', () => {
   const code = 'aGVsbG/kvaDlpb0=';
 
   before(() => {
-    const window = new JSDOM(domStr).window;
+    const { window } = new JSDOM(domStr);
 
     global.window = window;
   });

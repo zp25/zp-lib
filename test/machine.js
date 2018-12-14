@@ -1,3 +1,5 @@
+/* eslint no-unused-expressions: 0 */
+
 import chai from 'chai';
 import machine from '../src/machine';
 

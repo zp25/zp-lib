@@ -1,3 +1,5 @@
+/* eslint no-unused-expressions: 0 */
+
 import chai from 'chai';
 import sinon from 'sinon';
 import createReducer from '../src/createReducer';
@@ -27,7 +29,7 @@ describe('createReducer', () => {
     handlers = {
       [ACTION_FOO]: spyFoo,
       [ACTION_BAR]: spyBar,
-    }
+    };
 
     reducer = createReducer(initState, handlers);
   });

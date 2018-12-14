@@ -15,9 +15,9 @@ describe('templater', () => {
     `;
 
     const content = data => (
-      Array.isArray(data) ?
-        data.reduce((prev, d) => `${prev}<p>${d}</p>`, '') :
-        `<p>${data}</p>`
+      Array.isArray(data)
+        ? data.reduce((prev, d) => `${prev}<p>${d}</p>`, '')
+        : `<p>${data}</p>`
     );
     content.displayName = 'content';
 

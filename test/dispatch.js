@@ -1,3 +1,5 @@
+/* eslint no-unused-expressions: 0 */
+
 import chai from 'chai';
 import { JSDOM } from 'jsdom';
 import sinon from 'sinon';
@@ -24,8 +26,10 @@ describe('dispatch', () => {
   const spyLink = sinon.spy();
 
   before(() => {
-    const window = new JSDOM(domStr).window;
-    global.document = window.document;
+    const {
+      window: { document },
+    } = new JSDOM(domStr);
+    global.document = document;
 
     const clickHandlers = {
       link: spyLink,
@@ -36,7 +40,7 @@ describe('dispatch', () => {
 
   afterEach(() => {
     spyLink.resetHistory();
-  })
+  });
 
   it('正确分发事件', () => {
     document.querySelector('a[data-value="A"]').click();

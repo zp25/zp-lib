@@ -25,7 +25,7 @@ describe('api', () => {
       body: {
         code: 0,
         data: [
-          { id: 1, text: "Plain text" },
+          { id: 1, text: 'Plain text' },
         ],
       },
       errbody: {
@@ -58,12 +58,16 @@ describe('api', () => {
         status: 200,
         headers,
       });
-      fetchMock.post((url, { headers, body, mode }) => (
+      fetchMock.post((url, {
+        headers: reqHeaders,
+        body: reqBody,
+        mode,
+      }) => (
         url === `${host}/post/json`
-        && headers.get('Content-Type') === 'application/json'
-        && headers.get('Accept') === 'application/json'
-        && body === JSON.stringify(json)
-        && mode == 'no-cors'
+        && reqHeaders.get('Content-Type') === 'application/json'
+        && reqHeaders.get('Accept') === 'application/json'
+        && reqBody === JSON.stringify(json)
+        && mode === 'no-cors'
       ), res);
 
       return api.post(`${host}/post/json`, { body: json }).should.eventually.eql(body);
@@ -77,12 +81,16 @@ describe('api', () => {
         status: 200,
         headers,
       });
-      fetchMock.post((url, { headers, body, mode }) => (
+      fetchMock.post((url, {
+        headers: reqHeader,
+        body: reqBody,
+        mode,
+      }) => (
         url === `${host}/post/json`
-        && headers.get('Content-Type') === 'multipart/form-data'
-        && headers.get('Accept') === 'application/json'
-        && body instanceof FormData
-        && mode == 'no-cors'
+        && reqHeader.get('Content-Type') === 'multipart/form-data'
+        && reqHeader.get('Accept') === 'application/json'
+        && reqBody instanceof FormData
+        && mode === 'no-cors'
       ), res);
 
       return api.post(`${host}/post/json`, { body: formdata }).should.eventually.eql(body);
@@ -95,15 +103,15 @@ describe('api', () => {
         status: 200,
         headers,
       });
-      fetchMock.post((url, { headers }) => (
+      fetchMock.post((url, { headers: reqHeader }) => (
         url === `${host}/post/json`
-        && headers.get('Content-Type') === 'application/json'
-        && headers.get('Accept') === 'application/json'
+        && reqHeader.get('Content-Type') === 'application/json'
+        && reqHeader.get('Accept') === 'application/json'
       ), res);
 
       const opts = {
         headers: {
-          'Accept': 'text/html',
+          accept: 'text/html',
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       };
@@ -120,16 +128,16 @@ describe('api', () => {
         headers,
       });
       fetchMock.post((url, {
-        headers,
+        headers: reqHeader,
         body: reqBody,
         mode,
         credentials,
         bar,
       }) => (
         url === `${host}/post/json`
-        && headers.get('Content-Type') === 'application/json'
-        && headers.get('Accept') === 'application/json'
-        && headers.get('X-CUSTOM') === 'foo'
+        && reqHeader.get('Content-Type') === 'application/json'
+        && reqHeader.get('Accept') === 'application/json'
+        && reqHeader.get('X-CUSTOM') === 'foo'
         && reqBody === JSON.stringify(json)
         && mode === 'cors'
         && credentials === 'include'
@@ -151,7 +159,7 @@ describe('api', () => {
     });
 
     it('请求失败(status非2xx)抛出Error', () => {
-      fetchMock.post(`*`, 404);
+      fetchMock.post('*', 404);
 
       return api.post(`${host}/404`).should.be.rejectedWith(Error);
     });
@@ -182,9 +190,12 @@ describe('api', () => {
         headers,
       });
       // func接收url和调用fetch时传入的参数
-      fetchMock.get((url, { headers, mode }) => (
+      fetchMock.get((url, {
+        headers: reqHeader,
+        mode,
+      }) => (
         url === `${host}/get/json`
-        && headers.get('Accept') === 'application/json'
+        && reqHeader.get('Accept') === 'application/json'
         && mode === 'no-cors'
       ), res);
 
@@ -198,14 +209,14 @@ describe('api', () => {
         status: 200,
         headers,
       });
-      fetchMock.get((url, { headers }) => (
+      fetchMock.get((url, { headers: reqHeader }) => (
         url === `${host}/get/json`
-        && headers.get('Accept') === 'application/json'
+        && reqHeader.get('Accept') === 'application/json'
       ), res);
 
       const opts = {
         headers: {
-          'Accept': 'text/html',
+          accept: 'text/html',
         },
       };
 
@@ -220,14 +231,14 @@ describe('api', () => {
         headers,
       });
       fetchMock.get((url, {
-        headers,
+        headers: reqHeader,
         mode,
         credentials,
         bar,
       }) => (
         url === `${host}/get/json`
-        && headers.get('Accept') === 'application/json'
-        && headers.get('X-CUSTOM') === 'foo'
+        && reqHeader.get('Accept') === 'application/json'
+        && reqHeader.get('X-CUSTOM') === 'foo'
         && mode === 'cors'
         && credentials === 'include'
         && bar === 'baz'
@@ -247,7 +258,7 @@ describe('api', () => {
     });
 
     it('请求失败(status非2xx)抛出Error', () => {
-      fetchMock.get(`*`, 404);
+      fetchMock.get('*', 404);
 
       return api.get(`${host}/404`).should.be.rejectedWith(Error);
     });
@@ -259,12 +270,12 @@ describe('api', () => {
         status: 404,
         headers,
       });
-      fetchMock.get(`*`, res);
+      fetchMock.get('*', res);
 
       return api.get(`${host}/404`).catch((err) => {
         err.message.should.equal('404');
         err.body.should.eql(errbody);
-      });;
+      });
     });
 
     it('请求响应非JSON数据抛出Error', () => {
@@ -297,12 +308,16 @@ describe('api', () => {
         status: 200,
         headers,
       });
-      fetchMock.put((url, { headers, body, mode }) => (
+      fetchMock.put((url, {
+        headers: reqHeader,
+        body: reqBody,
+        mode,
+      }) => (
         url === `${host}/put/json`
-        && headers.get('Content-Type') === 'application/json'
-        && headers.get('Accept') === 'application/json'
-        && body === JSON.stringify(json)
-        && mode == 'no-cors'
+        && reqHeader.get('Content-Type') === 'application/json'
+        && reqHeader.get('Accept') === 'application/json'
+        && reqBody === JSON.stringify(json)
+        && mode === 'no-cors'
       ), res);
 
       return api.put(`${host}/put/json`, { body: json }).should.eventually.eql(body);
@@ -316,12 +331,16 @@ describe('api', () => {
         status: 200,
         headers,
       });
-      fetchMock.put((url, { headers, body, mode }) => (
+      fetchMock.put((url, {
+        headers: reqHeader,
+        body: reqBody,
+        mode,
+      }) => (
         url === `${host}/put/json`
-        && headers.get('Content-Type') === 'multipart/form-data'
-        && headers.get('Accept') === 'application/json'
-        && body instanceof FormData
-        && mode == 'no-cors'
+        && reqHeader.get('Content-Type') === 'multipart/form-data'
+        && reqHeader.get('Accept') === 'application/json'
+        && reqBody instanceof FormData
+        && mode === 'no-cors'
       ), res);
 
       return api.put(`${host}/put/json`, { body: formdata }).should.eventually.eql(body);
@@ -334,15 +353,15 @@ describe('api', () => {
         status: 200,
         headers,
       });
-      fetchMock.put((url, { headers }) => (
+      fetchMock.put((url, { headers: reqHeader }) => (
         url === `${host}/put/json`
-        && headers.get('Content-Type') === 'application/json'
-        && headers.get('Accept') === 'application/json'
+        && reqHeader.get('Content-Type') === 'application/json'
+        && reqHeader.get('Accept') === 'application/json'
       ), res);
 
       const opts = {
         headers: {
-          'Accept': 'text/html',
+          accept: 'text/html',
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       };
@@ -359,16 +378,16 @@ describe('api', () => {
         headers,
       });
       fetchMock.put((url, {
-        headers,
+        headers: reqHeader,
         body: reqBody,
         mode,
         credentials,
         bar,
       }) => (
         url === `${host}/put/json`
-        && headers.get('Content-Type') === 'application/json'
-        && headers.get('Accept') === 'application/json'
-        && headers.get('X-CUSTOM') === 'foo'
+        && reqHeader.get('Content-Type') === 'application/json'
+        && reqHeader.get('Accept') === 'application/json'
+        && reqHeader.get('X-CUSTOM') === 'foo'
         && reqBody === JSON.stringify(json)
         && mode === 'cors'
         && credentials === 'include'
@@ -390,7 +409,7 @@ describe('api', () => {
     });
 
     it('请求失败(status非2xx)抛出Error', () => {
-      fetchMock.put(`*`, 404);
+      fetchMock.put('*', 404);
 
       return api.put(`${host}/404`).should.be.rejectedWith(Error);
     });
@@ -421,9 +440,12 @@ describe('api', () => {
         headers,
       });
       // func接收url和调用fetch时传入的参数
-      fetchMock.delete((url, { headers, mode }) => (
+      fetchMock.delete((url, {
+        headers: reqHeader,
+        mode,
+      }) => (
         url === `${host}/delete/json`
-        && headers.get('Accept') === 'application/json'
+        && reqHeader.get('Accept') === 'application/json'
         && mode === 'no-cors'
       ), res);
 
@@ -437,14 +459,14 @@ describe('api', () => {
         status: 200,
         headers,
       });
-      fetchMock.delete((url, { headers }) => (
+      fetchMock.delete((url, { headers: reqHeader }) => (
         url === `${host}/delete/json`
-        && headers.get('Accept') === 'application/json'
+        && reqHeader.get('Accept') === 'application/json'
       ), res);
 
       const opts = {
         headers: {
-          'Accept': 'text/html',
+          accept: 'text/html',
         },
       };
 
@@ -459,14 +481,14 @@ describe('api', () => {
         headers,
       });
       fetchMock.delete((url, {
-        headers,
+        headers: reqHeader,
         mode,
         credentials,
         bar,
       }) => (
         url === `${host}/delete/json`
-        && headers.get('Accept') === 'application/json'
-        && headers.get('X-CUSTOM') === 'foo'
+        && reqHeader.get('Accept') === 'application/json'
+        && reqHeader.get('X-CUSTOM') === 'foo'
         && mode === 'cors'
         && credentials === 'include'
         && bar === 'baz'
@@ -486,7 +508,7 @@ describe('api', () => {
     });
 
     it('请求失败(status非2xx)抛出Error', () => {
-      fetchMock.delete(`*`, 404);
+      fetchMock.delete('*', 404);
 
       return api.delete(`${host}/404`).should.be.rejectedWith(Error);
     });
