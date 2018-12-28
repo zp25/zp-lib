@@ -214,7 +214,7 @@ var _cof = function (it) {
 };
 
 var _core = createCommonjsModule(function (module) {
-var core = module.exports = { version: '2.5.7' };
+var core = module.exports = { version: '2.6.1' };
 if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
 });
 var _core_1 = _core.version;
@@ -1587,16 +1587,172 @@ _export(_export.S + _export.F * !_iterDetect(function (iter) { }), 'Array', {
   }
 });
 
+var at = _stringAt(true);
+
+ // `AdvanceStringIndex` abstract operation
+// https://tc39.github.io/ecma262/#sec-advancestringindex
+var _advanceStringIndex = function (S, index, unicode) {
+  return index + (unicode ? at(S, index).length : 1);
+};
+
+var builtinExec = RegExp.prototype.exec;
+
+ // `RegExpExec` abstract operation
+// https://tc39.github.io/ecma262/#sec-regexpexec
+var _regexpExecAbstract = function (R, S) {
+  var exec = R.exec;
+  if (typeof exec === 'function') {
+    var result = exec.call(R, S);
+    if (typeof result !== 'object') {
+      throw new TypeError('RegExp exec method returned something other than an Object or null');
+    }
+    return result;
+  }
+  if (_classof(R) !== 'RegExp') {
+    throw new TypeError('RegExp#exec called on incompatible receiver');
+  }
+  return builtinExec.call(R, S);
+};
+
+var nativeExec = RegExp.prototype.exec;
+// This always refers to the native implementation, because the
+// String#replace polyfill uses ./fix-regexp-well-known-symbol-logic.js,
+// which loads this file before patching the method.
+var nativeReplace = String.prototype.replace;
+
+var patchedExec = nativeExec;
+
+var LAST_INDEX = 'lastIndex';
+
+var UPDATES_LAST_INDEX_WRONG = (function () {
+  var re1 = /a/,
+      re2 = /b*/g;
+  nativeExec.call(re1, 'a');
+  nativeExec.call(re2, 'a');
+  return re1[LAST_INDEX] !== 0 || re2[LAST_INDEX] !== 0;
+})();
+
+// nonparticipating capturing group, copied from es5-shim's String#split patch.
+var NPCG_INCLUDED = /()??/.exec('')[1] !== undefined;
+
+var PATCH = UPDATES_LAST_INDEX_WRONG || NPCG_INCLUDED;
+
+if (PATCH) {
+  patchedExec = function exec(str) {
+    var re = this;
+    var lastIndex, reCopy, match, i;
+
+    if (NPCG_INCLUDED) {
+      reCopy = new RegExp('^' + re.source + '$(?!\\s)', _flags.call(re));
+    }
+    if (UPDATES_LAST_INDEX_WRONG) lastIndex = re[LAST_INDEX];
+
+    match = nativeExec.call(re, str);
+
+    if (UPDATES_LAST_INDEX_WRONG && match) {
+      re[LAST_INDEX] = re.global ? match.index + match[0].length : lastIndex;
+    }
+    if (NPCG_INCLUDED && match && match.length > 1) {
+      // Fix browsers whose `exec` methods don't consistently return `undefined`
+      // for NPCG, like IE8. NOTE: This doesn' work for /(.?)?/
+      // eslint-disable-next-line no-loop-func
+      nativeReplace.call(match[0], reCopy, function () {
+        for (i = 1; i < arguments.length - 2; i++) {
+          if (arguments[i] === undefined) match[i] = undefined;
+        }
+      });
+    }
+
+    return match;
+  };
+}
+
+var _regexpExec = patchedExec;
+
+_export({
+  target: 'RegExp',
+  proto: true,
+  forced: _regexpExec !== /./.exec
+}, {
+  exec: _regexpExec
+});
+
+var SPECIES$2 = _wks('species');
+
+var REPLACE_SUPPORTS_NAMED_GROUPS = !_fails(function () {
+  // #replace needs built-in support for named groups.
+  // #match works fine because it just return the exec results, even if it has
+  // a "grops" property.
+  var re = /./;
+  re.exec = function () {
+    var result = [];
+    result.groups = { a: '7' };
+    return result;
+  };
+  return ''.replace(re, '$<a>') !== '7';
+});
+
+var SPLIT_WORKS_WITH_OVERWRITTEN_EXEC = (function () {
+  // Chrome 51 has a buggy "split" implementation when RegExp#exec !== nativeExec
+  var re = /(?:)/;
+  var originalExec = re.exec;
+  re.exec = function () { return originalExec.apply(this, arguments); };
+  var result = 'ab'.split(re);
+  return result.length === 2 && result[0] === 'a' && result[1] === 'b';
+})();
+
 var _fixReWks = function (KEY, length, exec) {
   var SYMBOL = _wks(KEY);
-  var fns = exec(_defined, SYMBOL, ''[KEY]);
-  var strfn = fns[0];
-  var rxfn = fns[1];
-  if (_fails(function () {
+
+  var DELEGATES_TO_SYMBOL = !_fails(function () {
+    // String methods call symbol-named RegEp methods
     var O = {};
     O[SYMBOL] = function () { return 7; };
     return ''[KEY](O) != 7;
-  })) {
+  });
+
+  var DELEGATES_TO_EXEC = DELEGATES_TO_SYMBOL ? !_fails(function () {
+    // Symbol-named RegExp methods call .exec
+    var execCalled = false;
+    var re = /a/;
+    re.exec = function () { execCalled = true; return null; };
+    if (KEY === 'split') {
+      // RegExp[@@split] doesn't call the regex's exec method, but first creates
+      // a new one. We need to return the patched regex when creating the new one.
+      re.constructor = {};
+      re.constructor[SPECIES$2] = function () { return re; };
+    }
+    re[SYMBOL]('');
+    return !execCalled;
+  }) : undefined;
+
+  if (
+    !DELEGATES_TO_SYMBOL ||
+    !DELEGATES_TO_EXEC ||
+    (KEY === 'replace' && !REPLACE_SUPPORTS_NAMED_GROUPS) ||
+    (KEY === 'split' && !SPLIT_WORKS_WITH_OVERWRITTEN_EXEC)
+  ) {
+    var nativeRegExpMethod = /./[SYMBOL];
+    var fns = exec(
+      _defined,
+      SYMBOL,
+      ''[KEY],
+      function maybeCallNative(nativeMethod, regexp, str, arg2, forceStringMethod) {
+        if (regexp.exec === _regexpExec) {
+          if (DELEGATES_TO_SYMBOL && !forceStringMethod) {
+            // The native String method already delegates to @@method (this
+            // polyfilled function), leasing to infinite recursion.
+            // We avoid it by directly calling the native @@method method.
+            return { done: true, value: nativeRegExpMethod.call(regexp, str, arg2) };
+          }
+          return { done: true, value: nativeMethod.call(str, regexp, arg2) };
+        }
+        return { done: false };
+      }
+    );
+    var strfn = fns[0];
+    var rxfn = fns[1];
+
     _redefine(String.prototype, KEY, strfn);
     _hide(RegExp.prototype, SYMBOL, length == 2
       // 21.2.5.8 RegExp.prototype[@@replace](string, replaceValue)
@@ -1609,16 +1765,115 @@ var _fixReWks = function (KEY, length, exec) {
   }
 };
 
+var max$1 = Math.max;
+var min$2 = Math.min;
+var floor$1 = Math.floor;
+var SUBSTITUTION_SYMBOLS = /\$([$&`']|\d\d?|<[^>]*>)/g;
+var SUBSTITUTION_SYMBOLS_NO_NAMED = /\$([$&`']|\d\d?)/g;
+
+var maybeToString = function (it) {
+  return it === undefined ? it : String(it);
+};
+
 // @@replace logic
-_fixReWks('replace', 2, function (defined, REPLACE, $replace) {
-  // 21.1.3.14 String.prototype.replace(searchValue, replaceValue)
-  return [function replace(searchValue, replaceValue) {
-    var O = defined(this);
-    var fn = searchValue == undefined ? undefined : searchValue[REPLACE];
-    return fn !== undefined
-      ? fn.call(searchValue, O, replaceValue)
-      : $replace.call(String(O), searchValue, replaceValue);
-  }, $replace];
+_fixReWks('replace', 2, function (defined, REPLACE, $replace, maybeCallNative) {
+  return [
+    // `String.prototype.replace` method
+    // https://tc39.github.io/ecma262/#sec-string.prototype.replace
+    function replace(searchValue, replaceValue) {
+      var O = defined(this);
+      var fn = searchValue == undefined ? undefined : searchValue[REPLACE];
+      return fn !== undefined
+        ? fn.call(searchValue, O, replaceValue)
+        : $replace.call(String(O), searchValue, replaceValue);
+    },
+    // `RegExp.prototype[@@replace]` method
+    // https://tc39.github.io/ecma262/#sec-regexp.prototype-@@replace
+    function (regexp, replaceValue) {
+      var res = maybeCallNative($replace, regexp, this, replaceValue);
+      if (res.done) return res.value;
+
+      var rx = _anObject(regexp);
+      var S = String(this);
+      var functionalReplace = typeof replaceValue === 'function';
+      if (!functionalReplace) replaceValue = String(replaceValue);
+      var global = rx.global;
+      if (global) {
+        var fullUnicode = rx.unicode;
+        rx.lastIndex = 0;
+      }
+      var results = [];
+      while (true) {
+        var result = _regexpExecAbstract(rx, S);
+        if (result === null) break;
+        results.push(result);
+        if (!global) break;
+        var matchStr = String(result[0]);
+        if (matchStr === '') rx.lastIndex = _advanceStringIndex(S, _toLength(rx.lastIndex), fullUnicode);
+      }
+      var accumulatedResult = '';
+      var nextSourcePosition = 0;
+      for (var i = 0; i < results.length; i++) {
+        result = results[i];
+        var matched = String(result[0]);
+        var position = max$1(min$2(_toInteger(result.index), S.length), 0);
+        var captures = [];
+        // NOTE: This is equivalent to
+        //   captures = result.slice(1).map(maybeToString)
+        // but for some reason `nativeSlice.call(result, 1, result.length)` (called in
+        // the slice polyfill when slicing native arrays) "doesn't work" in safari 9 and
+        // causes a crash (https://pastebin.com/N21QzeQA) when trying to debug it.
+        for (var j = 1; j < result.length; j++) captures.push(maybeToString(result[j]));
+        var namedCaptures = result.groups;
+        if (functionalReplace) {
+          var replacerArgs = [matched].concat(captures, position, S);
+          if (namedCaptures !== undefined) replacerArgs.push(namedCaptures);
+          var replacement = String(replaceValue.apply(undefined, replacerArgs));
+        } else {
+          replacement = getSubstitution(matched, S, position, captures, namedCaptures, replaceValue);
+        }
+        if (position >= nextSourcePosition) {
+          accumulatedResult += S.slice(nextSourcePosition, position) + replacement;
+          nextSourcePosition = position + matched.length;
+        }
+      }
+      return accumulatedResult + S.slice(nextSourcePosition);
+    }
+  ];
+
+    // https://tc39.github.io/ecma262/#sec-getsubstitution
+  function getSubstitution(matched, str, position, captures, namedCaptures, replacement) {
+    var tailPos = position + matched.length;
+    var m = captures.length;
+    var symbols = SUBSTITUTION_SYMBOLS_NO_NAMED;
+    if (namedCaptures !== undefined) {
+      namedCaptures = _toObject(namedCaptures);
+      symbols = SUBSTITUTION_SYMBOLS;
+    }
+    return $replace.call(replacement, symbols, function (match, ch) {
+      var capture;
+      switch (ch.charAt(0)) {
+        case '$': return '$';
+        case '&': return matched;
+        case '`': return str.slice(0, position);
+        case "'": return str.slice(tailPos);
+        case '<':
+          capture = namedCaptures[ch.slice(1, -1)];
+          break;
+        default: // \d\d?
+          var n = +ch;
+          if (n === 0) return ch;
+          if (n > m) {
+            var f = floor$1(n / 10);
+            if (f === 0) return ch;
+            if (f <= m) return captures[f - 1] === undefined ? ch.charAt(1) : captures[f - 1] + ch.charAt(1);
+            return ch;
+          }
+          capture = captures[n - 1];
+      }
+      return capture === undefined ? '' : capture;
+    });
+  }
 });
 
 /**
@@ -2149,7 +2404,7 @@ var es6_map = _collection(MAP, function (get) {
 var bindCustomEvent = (function (obj) {
   var eventMap = new Map(Object.entries(obj));
   eventMap.forEach(function (handler, event) {
-    window.addEventListener(event, handler, false);
+    document.addEventListener(event, handler, false);
   });
 });
 
@@ -2394,6 +2649,147 @@ var searchParams = (function (search) {
 
   return result;
 });
+
+/**
+ * @typedef {Object} storage
+ * @property {function} get - 读数据
+ * @property {function} set - 写数据
+ * @property {function} remove - 删数据
+ * @description 不知道怎么写
+ */
+
+/**
+ * 读取localStorage
+ * @param {string} key
+ * @return {(Object|string|null)} 若没有匹配key，返回null
+ * @description 读取，没有匹配项返回null
+ * @ignore
+ */
+var read = function read(key) {
+  return JSON.parse(localStorage.getItem(key));
+};
+/**
+ * 写入localStorage
+ * @param {*} data - 可序列化数据
+ * @ignore
+ */
+
+
+var save = function save(key, data) {
+  localStorage.setItem(key, JSON.stringify(data));
+};
+/**
+ * 自定义错误
+ * @param {string} message
+ * @ignore
+ */
+
+
+function StorageTypeError(message) {
+  this.name = 'StorageTypeError';
+  this.message = message || 'Storage Type Error';
+}
+
+StorageTypeError.prototype = Object.create(Error.prototype);
+StorageTypeError.prototype.constructor = StorageTypeError;
+/**
+ * @module storage
+ * @description 主要为了统一存取格式。如果遇到不统一格式，读取总是返回undefined，写入会强制替换
+ * @param {string} item - 标记
+ * @param {boolean} [forceUpdate=true] - 默认若格式不统一，会覆盖原先值。设置false不强制覆盖，总是抛出错误
+ * @return {storage}
+ */
+
+var storage = function storage(item) {
+  var forceUpdate = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
+  /**
+   * 读数据
+   * @param {string} key
+   * @throws {StorageTypeError}
+   */
+  var get = function get(key) {
+    var data = read(item); // 区分未设置的item
+
+    if (data === null) {
+      return null;
+    }
+
+    if (_typeof(data) !== 'object') {
+      if (!forceUpdate) {
+        throw new StorageTypeError();
+      }
+
+      save(item, {});
+      return undefined;
+    }
+
+    return data[key];
+  };
+  /**
+   * 写数据
+   * @param {string} key
+   * @param {*} val - 可序列化数据
+   * @return {undefined}
+   * @throws {StorageTypeError}
+   */
+
+
+  var set = function set(key, val) {
+    var data = read(item);
+
+    if (_typeof(data) !== 'object') {
+      if (!forceUpdate) {
+        throw new StorageTypeError();
+      }
+
+      data = null;
+    }
+
+    data = Object.assign({}, data, _defineProperty({}, key, val));
+    save(item, data);
+  };
+  /**
+   * 删数据
+   * @param {string} key
+   */
+
+
+  var del = function del(key) {
+    var data = read(item);
+
+    if (data === null) {
+      data = {};
+    }
+
+    if (_typeof(data) !== 'object') {
+      if (!forceUpdate) {
+        throw new StorageTypeError();
+      }
+
+      data = {};
+    }
+
+    var rest = Object.entries(data).reduce(function (prev, _ref) {
+      var _ref2 = _slicedToArray(_ref, 2),
+          k = _ref2[0],
+          v = _ref2[1];
+
+      if (k === key) {
+        return prev;
+      }
+
+      return Object.assign({}, prev, _defineProperty({}, k, v));
+    }, {});
+    save(item, rest);
+  };
+
+  return {
+    get: get,
+    set: set,
+    delete: del
+  };
+};
 
 // https://github.com/tc39/Array.prototype.includes
 
@@ -2712,6 +3108,7 @@ exports.dispatch = dispatch;
 exports.escapeHTML = escapeHTML;
 exports.machine = machine;
 exports.searchParams = searchParams;
+exports.storage = storage;
 exports.Subject = Subject;
 exports.templater = templater;
 exports.templaterAsync = templaterAsync;
