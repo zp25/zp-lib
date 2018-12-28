@@ -6,7 +6,7 @@
 
 模块介绍
 
-+ api, API Abstraction
++ api，API Abstraction
 + base64，使用base64编码和解码字符串
   + encodeBase64
   + decodeBase64
@@ -17,6 +17,7 @@
 + escapeHTML，转义字符串
 + machine，有限状态机
 + searchParams，返回object，存储location.search中的key-value对
++ storage，本地存储
 + Subject，观察者模式目标
 + templater，模版引擎
   + templater，同步

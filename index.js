@@ -10,6 +10,7 @@ import dispatch from './src/dispatch';
 import escapeHTML from './src/escapeHTML';
 import machine from './src/machine';
 import searchParams from './src/searchParams';
+import storage from './src/storage';
 import Subject from './src/subject';
 import {
   templater,
@@ -27,6 +28,7 @@ export {
   escapeHTML,
   machine,
   searchParams,
+  storage,
   Subject,
   templater,
   templaterAsync,
