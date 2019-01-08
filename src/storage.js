@@ -98,6 +98,8 @@ const storage = (item, forceUpdate = true) => {
   /**
    * 删数据
    * @param {string} key
+   * @return {undefined}
+   * @throws {StorageTypeError}
    */
   const del = (key) => {
     let data = read(item);
@@ -125,10 +127,36 @@ const storage = (item, forceUpdate = true) => {
     save(item, rest);
   };
 
+  /**
+   * 查看keys
+   * @return {Array.<string>|null}
+   * @throws {StorageTypeError}
+   */
+  const keys = () => {
+    const data = read(item);
+
+    // 区分未设置的item
+    if (data === null) {
+      return null;
+    }
+
+    if (typeof data !== 'object') {
+      if (!forceUpdate) {
+        throw new StorageTypeError();
+      }
+
+      save(item, {});
+      return [];
+    }
+
+    return Object.keys(data);
+  };
+
   return {
     get,
     set,
     delete: del,
+    keys,
   };
 };
 

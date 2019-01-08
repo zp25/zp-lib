@@ -57,12 +57,13 @@ describe('storage', () => {
       fakeSave.calledWithExactly(item, {}).should.be.true;
     });
 
-    it('若取消forcepdat，item数据格式不合法将抛出错误', () => {
+    it('若取消forcepdat，item数据格式不合法将抛出错误，不应该修改原item', () => {
       const item = 'illegal';
       const store = storage(item, false);
 
       const fn = () => { store.get('foo'); };
       fn.should.throw(StorageTypeError);
+      fakeSave.notCalled.should.be.true;
     });
 
     it('正确返回值', () => {
@@ -117,12 +118,13 @@ describe('storage', () => {
       fakeSave.calledWithExactly(item, data).should.be.true;
     });
 
-    it('取消forceUpdate后向不合法数据item写入时抛出错误', () => {
+    it('取消forceUpdate后向不合法数据item写入时抛出错误，不应该修改原item', () => {
       const item = 'illegal';
       const store = storage(item, false);
 
       const fn = () => { store.set('foo', data.foo); };
       fn.should.throw(StorageTypeError);
+      fakeSave.notCalled.should.be.true;
     });
 
     it('正确更新值', () => {
@@ -171,12 +173,13 @@ describe('storage', () => {
       fakeSave.calledWithExactly(item, {}).should.be.true;
     });
 
-    it('取消forceUpdate后尝试删除不合法数据item将抛出错误', () => {
+    it('取消forceUpdate后尝试删除不合法数据item将抛出错误，不应该修改原item', () => {
       const item = 'illegal';
       const store = storage(item, false);
 
       const fn = () => { store.delete('foo'); };
       fn.should.throw(StorageTypeError);
+      fakeSave.notCalled.should.be.true;
     });
 
     it('正确删除值', () => {
@@ -186,6 +189,53 @@ describe('storage', () => {
       store.delete('foo');
 
       fakeSave.calledWithExactly(item, { bar: 'hello world' }).should.be.true;
+    });
+  });
+
+  describe('keys', () => {
+    let fakeSave = null;
+
+    before(() => {
+      fakeSave = sinon.spy();
+
+      wrapper.__set__('read', fakeRead);
+      wrapper.__set__('save', fakeSave);
+    });
+
+    afterEach(() => {
+      fakeSave.resetHistory();
+    });
+
+    it('无匹配item返回null', () => {
+      const item = 'null';
+      const store = storage(item);
+
+      (store.keys() === null).should.be.true;
+    });
+
+    it('item数据格式不合法默认返回空数组，并更新item为空object', () => {
+      const item = 'illegal';
+      const store = storage(item);
+
+      store.keys().should.eql([]);
+      fakeSave.calledWithExactly(item, {}).should.be.true;
+    });
+
+    it('若取消forcepdat，item数据格式不合法将抛出错误，不应该修改原item', () => {
+      const item = 'illegal';
+      const store = storage(item, false);
+
+      const fn = () => { store.keys(); };
+      fn.should.throw(StorageTypeError);
+      fakeSave.notCalled.should.be.true;
+    });
+
+    it('正确返回值', () => {
+      const item = 'data';
+      const compare = Object.keys(dataset[item]);
+      const store = storage(item);
+
+      store.keys().should.eql(compare);
     });
   });
 });
