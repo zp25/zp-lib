@@ -2650,6 +2650,27 @@ var searchParams = (function (search) {
   return result;
 });
 
+// most Object methods by ES6 should accept primitives
+
+
+
+var _objectSap = function (KEY, exec) {
+  var fn = (_core.Object || {})[KEY] || Object[KEY];
+  var exp = {};
+  exp[KEY] = exec(fn);
+  _export(_export.S + _export.F * _fails(function () { fn(1); }), 'Object', exp);
+};
+
+// 19.1.2.14 Object.keys(O)
+
+
+
+_objectSap('keys', function () {
+  return function keys(it) {
+    return _objectKeys(_toObject(it));
+  };
+});
+
 /**
  * @typedef {Object} storage
  * @property {function} get - 读数据
@@ -2752,6 +2773,8 @@ var storage = function storage(item) {
   /**
    * 删数据
    * @param {string} key
+   * @return {undefined}
+   * @throws {StorageTypeError}
    */
 
 
@@ -2783,11 +2806,37 @@ var storage = function storage(item) {
     }, {});
     save(item, rest);
   };
+  /**
+   * 查看keys
+   * @return {Array.<string>|null}
+   * @throws {StorageTypeError}
+   */
+
+
+  var keys = function keys() {
+    var data = read(item); // 区分未设置的item
+
+    if (data === null) {
+      return null;
+    }
+
+    if (_typeof(data) !== 'object') {
+      if (!forceUpdate) {
+        throw new StorageTypeError();
+      }
+
+      save(item, {});
+      return [];
+    }
+
+    return Object.keys(data);
+  };
 
   return {
     get: get,
     set: set,
-    delete: del
+    delete: del,
+    keys: keys
   };
 };
 
