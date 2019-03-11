@@ -1,6 +1,6 @@
 /**
  * @module api
- * @description 接口
+ * @description API Abstraction，请求数据仅支持json和form-data，响应数据仅支持json
  */
 
 const MIME_JSON = 'application/json';
