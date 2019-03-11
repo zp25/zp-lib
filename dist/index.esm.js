@@ -162,8 +162,6 @@ function _nonIterableRest() {
   throw new TypeError("Invalid attempt to destructure non-iterable instance");
 }
 
-var _library = false;
-
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
@@ -176,6 +174,15 @@ var global = module.exports = typeof window != 'undefined' && window.Math == Mat
   : Function('return this')();
 if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
 });
+
+var _isObject = function (it) {
+  return typeof it === 'object' ? it !== null : typeof it === 'function';
+};
+
+var _anObject = function (it) {
+  if (!_isObject(it)) throw TypeError(it + ' is not an object!');
+  return it;
+};
 
 var _aFunction = function (it) {
   if (typeof it != 'function') throw TypeError(it + ' is not a function!');
@@ -203,82 +210,63 @@ var _ctx = function (fn, that, length) {
   };
 };
 
+var f = {}.propertyIsEnumerable;
+
+var _objectPie = {
+	f: f
+};
+
+var _propertyDesc = function (bitmap, value) {
+  return {
+    enumerable: !(bitmap & 1),
+    configurable: !(bitmap & 2),
+    writable: !(bitmap & 4),
+    value: value
+  };
+};
+
 var toString = {}.toString;
 
 var _cof = function (it) {
   return toString.call(it).slice(8, -1);
 };
 
-var _core = createCommonjsModule(function (module) {
-var core = module.exports = { version: '2.6.1' };
-if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
-});
-var _core_1 = _core.version;
+// fallback for non-array-like ES3 and non-enumerable old V8 strings
 
-var _shared = createCommonjsModule(function (module) {
-var SHARED = '__core-js_shared__';
-var store = _global[SHARED] || (_global[SHARED] = {});
-
-(module.exports = function (key, value) {
-  return store[key] || (store[key] = value !== undefined ? value : {});
-})('versions', []).push({
-  version: _core.version,
-  mode: 'global',
-  copyright: '© 2018 Denis Pushkarev (zloirock.ru)'
-});
-});
-
-var id$1 = 0;
-var px = Math.random();
-var _uid = function (key) {
-  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id$1 + px).toString(36));
+// eslint-disable-next-line no-prototype-builtins
+var _iobject = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
+  return _cof(it) == 'String' ? it.split('') : Object(it);
 };
 
-var _wks = createCommonjsModule(function (module) {
-var store = _shared('wks');
-
-var Symbol = _global.Symbol;
-var USE_SYMBOL = typeof Symbol == 'function';
-
-var $exports = module.exports = function (name) {
-  return store[name] || (store[name] =
-    USE_SYMBOL && Symbol[name] || (USE_SYMBOL ? Symbol : _uid)('Symbol.' + name));
-};
-
-$exports.store = store;
-});
-
-// getting tag from 19.1.3.6 Object.prototype.toString()
-
-var TAG = _wks('toStringTag');
-// ES3 wrong here
-var ARG = _cof(function () { return arguments; }()) == 'Arguments';
-
-// fallback for IE11 Script Access Denied error
-var tryGet = function (it, key) {
-  try {
-    return it[key];
-  } catch (e) { /* empty */ }
-};
-
-var _classof = function (it) {
-  var O, T, B;
-  return it === undefined ? 'Undefined' : it === null ? 'Null'
-    // @@toStringTag case
-    : typeof (T = tryGet(O = Object(it), TAG)) == 'string' ? T
-    // builtinTag case
-    : ARG ? _cof(O)
-    // ES3 arguments fallback
-    : (B = _cof(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : B;
-};
-
-var _isObject = function (it) {
-  return typeof it === 'object' ? it !== null : typeof it === 'function';
-};
-
-var _anObject = function (it) {
-  if (!_isObject(it)) throw TypeError(it + ' is not an object!');
+// 7.2.1 RequireObjectCoercible(argument)
+var _defined = function (it) {
+  if (it == undefined) throw TypeError("Can't call method on  " + it);
   return it;
+};
+
+// to indexed object, toObject with fallback for non-array-like ES3 strings
+
+
+var _toIobject = function (it) {
+  return _iobject(_defined(it));
+};
+
+// 7.1.1 ToPrimitive(input [, PreferredType])
+
+// instead of the ES6 spec version, we didn't implement @@toPrimitive case
+// and the second argument - flag - preferred type is a string
+var _toPrimitive = function (it, S) {
+  if (!_isObject(it)) return it;
+  var fn, val;
+  if (S && typeof (fn = it.toString) == 'function' && !_isObject(val = fn.call(it))) return val;
+  if (typeof (fn = it.valueOf) == 'function' && !_isObject(val = fn.call(it))) return val;
+  if (!S && typeof (fn = it.toString) == 'function' && !_isObject(val = fn.call(it))) return val;
+  throw TypeError("Can't convert object to primitive value");
+};
+
+var hasOwnProperty = {}.hasOwnProperty;
+var _has = function (it, key) {
+  return hasOwnProperty.call(it, key);
 };
 
 var _fails = function (exec) {
@@ -305,24 +293,61 @@ var _ie8DomDefine = !_descriptors && !_fails(function () {
   return Object.defineProperty(_domCreate('div'), 'a', { get: function () { return 7; } }).a != 7;
 });
 
-// 7.1.1 ToPrimitive(input [, PreferredType])
+var gOPD = Object.getOwnPropertyDescriptor;
 
-// instead of the ES6 spec version, we didn't implement @@toPrimitive case
-// and the second argument - flag - preferred type is a string
-var _toPrimitive$1 = function (it, S) {
-  if (!_isObject(it)) return it;
-  var fn, val;
-  if (S && typeof (fn = it.toString) == 'function' && !_isObject(val = fn.call(it))) return val;
-  if (typeof (fn = it.valueOf) == 'function' && !_isObject(val = fn.call(it))) return val;
-  if (!S && typeof (fn = it.toString) == 'function' && !_isObject(val = fn.call(it))) return val;
-  throw TypeError("Can't convert object to primitive value");
+var f$1 = _descriptors ? gOPD : function getOwnPropertyDescriptor(O, P) {
+  O = _toIobject(O);
+  P = _toPrimitive(P, true);
+  if (_ie8DomDefine) try {
+    return gOPD(O, P);
+  } catch (e) { /* empty */ }
+  if (_has(O, P)) return _propertyDesc(!_objectPie.f.call(O, P), O[P]);
+};
+
+var _objectGopd = {
+	f: f$1
+};
+
+// Works with __proto__ only. Old v8 can't work with null proto objects.
+/* eslint-disable no-proto */
+
+
+var check = function (O, proto) {
+  _anObject(O);
+  if (!_isObject(proto) && proto !== null) throw TypeError(proto + ": can't set as prototype!");
+};
+var _setProto = {
+  set: Object.setPrototypeOf || ('__proto__' in {} ? // eslint-disable-line
+    function (test, buggy, set) {
+      try {
+        set = _ctx(Function.call, _objectGopd.f(Object.prototype, '__proto__').set, 2);
+        set(test, []);
+        buggy = !(test instanceof Array);
+      } catch (e) { buggy = true; }
+      return function setPrototypeOf(O, proto) {
+        check(O, proto);
+        if (buggy) O.__proto__ = proto;
+        else set(O, proto);
+        return O;
+      };
+    }({}, false) : undefined),
+  check: check
+};
+
+var setPrototypeOf = _setProto.set;
+var _inheritIfRequired = function (that, target, C) {
+  var S = target.constructor;
+  var P;
+  if (S !== C && typeof S == 'function' && (P = S.prototype) !== C.prototype && _isObject(P) && setPrototypeOf) {
+    setPrototypeOf(that, P);
+  } return that;
 };
 
 var dP = Object.defineProperty;
 
-var f = _descriptors ? Object.defineProperty : function defineProperty(O, P, Attributes) {
+var f$2 = _descriptors ? Object.defineProperty : function defineProperty(O, P, Attributes) {
   _anObject(O);
-  P = _toPrimitive$1(P, true);
+  P = _toPrimitive(P, true);
   _anObject(Attributes);
   if (_ie8DomDefine) try {
     return dP(O, P, Attributes);
@@ -333,16 +358,154 @@ var f = _descriptors ? Object.defineProperty : function defineProperty(O, P, Att
 };
 
 var _objectDp = {
-	f: f
+	f: f$2
 };
 
-var _propertyDesc = function (bitmap, value) {
-  return {
-    enumerable: !(bitmap & 1),
-    configurable: !(bitmap & 2),
-    writable: !(bitmap & 4),
-    value: value
+// 7.1.4 ToInteger
+var ceil = Math.ceil;
+var floor = Math.floor;
+var _toInteger = function (it) {
+  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
+};
+
+// 7.1.15 ToLength
+
+var min = Math.min;
+var _toLength = function (it) {
+  return it > 0 ? min(_toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
+};
+
+var max = Math.max;
+var min$1 = Math.min;
+var _toAbsoluteIndex = function (index, length) {
+  index = _toInteger(index);
+  return index < 0 ? max(index + length, 0) : min$1(index, length);
+};
+
+// false -> Array#indexOf
+// true  -> Array#includes
+
+
+
+var _arrayIncludes = function (IS_INCLUDES) {
+  return function ($this, el, fromIndex) {
+    var O = _toIobject($this);
+    var length = _toLength(O.length);
+    var index = _toAbsoluteIndex(fromIndex, length);
+    var value;
+    // Array#includes uses SameValueZero equality algorithm
+    // eslint-disable-next-line no-self-compare
+    if (IS_INCLUDES && el != el) while (length > index) {
+      value = O[index++];
+      // eslint-disable-next-line no-self-compare
+      if (value != value) return true;
+    // Array#indexOf ignores holes, Array#includes - not
+    } else for (;length > index; index++) if (IS_INCLUDES || index in O) {
+      if (O[index] === el) return IS_INCLUDES || index || 0;
+    } return !IS_INCLUDES && -1;
   };
+};
+
+var _core = createCommonjsModule(function (module) {
+var core = module.exports = { version: '2.6.5' };
+if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
+});
+var _core_1 = _core.version;
+
+var _library = false;
+
+var _shared = createCommonjsModule(function (module) {
+var SHARED = '__core-js_shared__';
+var store = _global[SHARED] || (_global[SHARED] = {});
+
+(module.exports = function (key, value) {
+  return store[key] || (store[key] = value !== undefined ? value : {});
+})('versions', []).push({
+  version: _core.version,
+  mode: 'global',
+  copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
+});
+});
+
+var id = 0;
+var px = Math.random();
+var _uid = function (key) {
+  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
+};
+
+var shared = _shared('keys');
+
+var _sharedKey = function (key) {
+  return shared[key] || (shared[key] = _uid(key));
+};
+
+var arrayIndexOf = _arrayIncludes(false);
+var IE_PROTO = _sharedKey('IE_PROTO');
+
+var _objectKeysInternal = function (object, names) {
+  var O = _toIobject(object);
+  var i = 0;
+  var result = [];
+  var key;
+  for (key in O) if (key != IE_PROTO) _has(O, key) && result.push(key);
+  // Don't enum bug & hidden keys
+  while (names.length > i) if (_has(O, key = names[i++])) {
+    ~arrayIndexOf(result, key) || result.push(key);
+  }
+  return result;
+};
+
+// IE 8- don't enum bug keys
+var _enumBugKeys = (
+  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
+).split(',');
+
+// 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
+
+var hiddenKeys = _enumBugKeys.concat('length', 'prototype');
+
+var f$3 = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
+  return _objectKeysInternal(O, hiddenKeys);
+};
+
+var _objectGopn = {
+	f: f$3
+};
+
+var _wks = createCommonjsModule(function (module) {
+var store = _shared('wks');
+
+var Symbol = _global.Symbol;
+var USE_SYMBOL = typeof Symbol == 'function';
+
+var $exports = module.exports = function (name) {
+  return store[name] || (store[name] =
+    USE_SYMBOL && Symbol[name] || (USE_SYMBOL ? Symbol : _uid)('Symbol.' + name));
+};
+
+$exports.store = store;
+});
+
+// 7.2.8 IsRegExp(argument)
+
+
+var MATCH = _wks('match');
+var _isRegexp = function (it) {
+  var isRegExp;
+  return _isObject(it) && ((isRegExp = it[MATCH]) !== undefined ? !!isRegExp : _cof(it) == 'RegExp');
+};
+
+// 21.2.5.3 get RegExp.prototype.flags
+
+var _flags = function () {
+  var that = _anObject(this);
+  var result = '';
+  if (that.global) result += 'g';
+  if (that.ignoreCase) result += 'i';
+  if (that.multiline) result += 'm';
+  if (that.unicode) result += 'u';
+  if (that.sticky) result += 'y';
+  return result;
 };
 
 var _hide = _descriptors ? function (object, key, value) {
@@ -352,19 +515,16 @@ var _hide = _descriptors ? function (object, key, value) {
   return object;
 };
 
-var hasOwnProperty = {}.hasOwnProperty;
-var _has = function (it, key) {
-  return hasOwnProperty.call(it, key);
-};
+var _functionToString = _shared('native-function-to-string', Function.toString);
 
 var _redefine = createCommonjsModule(function (module) {
 var SRC = _uid('src');
+
 var TO_STRING = 'toString';
-var $toString = Function[TO_STRING];
-var TPL = ('' + $toString).split(TO_STRING);
+var TPL = ('' + _functionToString).split(TO_STRING);
 
 _core.inspectSource = function (it) {
-  return $toString.call(it);
+  return _functionToString.call(it);
 };
 
 (module.exports = function (O, key, val, safe) {
@@ -384,9 +544,85 @@ _core.inspectSource = function (it) {
   }
 // add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
 })(Function.prototype, TO_STRING, function toString() {
-  return typeof this == 'function' && this[SRC] || $toString.call(this);
+  return typeof this == 'function' && this[SRC] || _functionToString.call(this);
 });
 });
+
+var SPECIES = _wks('species');
+
+var _setSpecies = function (KEY) {
+  var C = _global[KEY];
+  if (_descriptors && C && !C[SPECIES]) _objectDp.f(C, SPECIES, {
+    configurable: true,
+    get: function () { return this; }
+  });
+};
+
+var dP$1 = _objectDp.f;
+var gOPN = _objectGopn.f;
+
+
+var $RegExp = _global.RegExp;
+var Base = $RegExp;
+var proto = $RegExp.prototype;
+var re1 = /a/g;
+var re2 = /a/g;
+// "new" creates a new object, old webkit buggy here
+var CORRECT_NEW = new $RegExp(re1) !== re1;
+
+if (_descriptors && (!CORRECT_NEW || _fails(function () {
+  re2[_wks('match')] = false;
+  // RegExp constructor can alter flags and IsRegExp works correct with @@match
+  return $RegExp(re1) != re1 || $RegExp(re2) == re2 || $RegExp(re1, 'i') != '/a/i';
+}))) {
+  $RegExp = function RegExp(p, f) {
+    var tiRE = this instanceof $RegExp;
+    var piRE = _isRegexp(p);
+    var fiU = f === undefined;
+    return !tiRE && piRE && p.constructor === $RegExp && fiU ? p
+      : _inheritIfRequired(CORRECT_NEW
+        ? new Base(piRE && !fiU ? p.source : p, f)
+        : Base((piRE = p instanceof $RegExp) ? p.source : p, piRE && fiU ? _flags.call(p) : f)
+      , tiRE ? this : proto, $RegExp);
+  };
+  var proxy = function (key) {
+    key in $RegExp || dP$1($RegExp, key, {
+      configurable: true,
+      get: function () { return Base[key]; },
+      set: function (it) { Base[key] = it; }
+    });
+  };
+  for (var keys = gOPN(Base), i = 0; keys.length > i;) proxy(keys[i++]);
+  proto.constructor = $RegExp;
+  $RegExp.prototype = proto;
+  _redefine(_global, 'RegExp', $RegExp);
+}
+
+_setSpecies('RegExp');
+
+// getting tag from 19.1.3.6 Object.prototype.toString()
+
+var TAG = _wks('toStringTag');
+// ES3 wrong here
+var ARG = _cof(function () { return arguments; }()) == 'Arguments';
+
+// fallback for IE11 Script Access Denied error
+var tryGet = function (it, key) {
+  try {
+    return it[key];
+  } catch (e) { /* empty */ }
+};
+
+var _classof = function (it) {
+  var O, T, B;
+  return it === undefined ? 'Undefined' : it === null ? 'Null'
+    // @@toStringTag case
+    : typeof (T = tryGet(O = Object(it), TAG)) == 'string' ? T
+    // builtinTag case
+    : ARG ? _cof(O)
+    // ES3 arguments fallback
+    : (B = _cof(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : B;
+};
 
 var PROTOTYPE = 'prototype';
 
@@ -457,20 +693,6 @@ var _isArrayIter = function (it) {
   return it !== undefined && (_iterators.Array === it || ArrayProto[ITERATOR] === it);
 };
 
-// 7.1.4 ToInteger
-var ceil = Math.ceil;
-var floor = Math.floor;
-var _toInteger = function (it) {
-  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
-};
-
-// 7.1.15 ToLength
-
-var min = Math.min;
-var _toLength = function (it) {
-  return it > 0 ? min(_toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
-};
-
 var ITERATOR$1 = _wks('iterator');
 
 var core_getIteratorMethod = _core.getIteratorMethod = function (it) {
@@ -504,11 +726,11 @@ exports.RETURN = RETURN;
 // 7.3.20 SpeciesConstructor(O, defaultConstructor)
 
 
-var SPECIES = _wks('species');
+var SPECIES$1 = _wks('species');
 var _speciesConstructor = function (O, D) {
   var C = _anObject(O).constructor;
   var S;
-  return C === undefined || (S = _anObject(C)[SPECIES]) == undefined ? D : _aFunction(S);
+  return C === undefined || (S = _anObject(C)[SPECIES$1]) == undefined ? D : _aFunction(S);
 };
 
 // fast apply, http://jsperf.lnkit.com/fast-apply/5
@@ -694,12 +916,12 @@ function PromiseCapability(C) {
   this.reject = _aFunction(reject);
 }
 
-var f$1 = function (C) {
+var f$4 = function (C) {
   return new PromiseCapability(C);
 };
 
 var _newPromiseCapability = {
-	f: f$1
+	f: f$4
 };
 
 var _perform = function (exec) {
@@ -734,16 +956,6 @@ var TAG$1 = _wks('toStringTag');
 
 var _setToStringTag = function (it, tag, stat) {
   if (it && !_has(it = stat ? it : it.prototype, TAG$1)) def(it, TAG$1, { configurable: true, value: tag });
-};
-
-var SPECIES$1 = _wks('species');
-
-var _setSpecies = function (KEY) {
-  var C = _global[KEY];
-  if (_descriptors && C && !C[SPECIES$1]) _objectDp.f(C, SPECIES$1, {
-    configurable: true,
-    get: function () { return this; }
-  });
 };
 
 var ITERATOR$2 = _wks('iterator');
@@ -1076,22 +1288,36 @@ var handleError = function handleError(res) {
 /**
  * 数据类型过滤，仅接收JSON
  * @param {Response} res - 服务器响应
- * @return {(Response|Promise)}
+ * @return {Promise}
  * @private
  */
 
 
 var handleContent = function handleContent(res) {
   var contentType = res.headers.get('content-type');
+  var isJson = new RegExp(MIME_JSON, 'i');
 
-  if (/application\/json/i.test(contentType)) {
+  if (isJson.test(contentType)) {
     return res.json();
   }
 
   return Promise.reject(new Error('Not a JSON'));
 };
 /**
- * 整理请求数据
+ * fetch统一逻辑
+ * @description 处理非网络错误、要求res必须是application/json
+ * @param {(Request|string)} input - 请求地址
+ * @param {Object} init - fetch配置
+ * @return {Promise}
+ * @private
+ */
+
+
+var fetchProcess = function fetchProcess(input, init) {
+  return fetch(input, init).then(handleError).then(handleContent);
+};
+/**
+ * 整理请求数据，返回mime类型和规范的data格式
  * @param {(FormData|JSON)} body
  * @return {Object}
  * @private
@@ -1109,6 +1335,38 @@ var reqData = function reqData(body) {
   return {
     mime: MIME_JSON,
     data: JSON.stringify(body)
+  };
+};
+/**
+ * 整理请求实体，添加必要的Header
+ * @param {Object} init
+ * @param {Object} [init.headers]
+ * @param {(FormData|JSON)} [init.body]
+ * @return {Object}
+ */
+
+
+var reqHeadersAndBody = function reqHeadersAndBody() {
+  var init = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+  var headers = init.headers,
+      body = init.body;
+  var h = new Headers(headers);
+  h.set('Accept', MIME_JSON);
+
+  if (typeof body === 'undefined') {
+    return {
+      headers: h
+    };
+  }
+
+  var _reqData = reqData(body),
+      mime = _reqData.mime,
+      data = _reqData.data;
+
+  h.set('Content-Type', mime);
+  return {
+    headers: h,
+    body: data
   };
 };
 /**
@@ -1132,19 +1390,14 @@ var post = function post(input) {
       mode = _init$mode === void 0 ? 'no-cors' : _init$mode,
       rest = _objectWithoutProperties(init, ["headers", "body", "mode"]);
 
-  var _reqData = reqData(body),
-      mime = _reqData.mime,
-      data = _reqData.data;
-
-  var h = new Headers(headers);
-  h.set('Content-Type', mime);
-  h.set('Accept', MIME_JSON);
-  return fetch(input, _objectSpread({}, rest, {
-    method: 'POST',
-    headers: h,
-    body: data,
+  return fetchProcess(input, _objectSpread({}, rest, {
+    method: 'POST'
+  }, reqHeadersAndBody({
+    headers: headers,
+    body: body
+  }), {
     mode: mode
-  })).then(handleError).then(handleContent);
+  }));
 };
 /**
  * 查
@@ -1164,13 +1417,13 @@ var get = function get(input) {
       mode = _init$mode2 === void 0 ? 'no-cors' : _init$mode2,
       rest = _objectWithoutProperties(init, ["headers", "mode"]);
 
-  var h = new Headers(headers);
-  h.set('Accept', MIME_JSON);
-  return fetch(input, _objectSpread({}, rest, {
-    method: 'GET',
-    headers: h,
+  return fetchProcess(input, _objectSpread({}, rest, {
+    method: 'GET'
+  }, reqHeadersAndBody({
+    headers: headers
+  }), {
     mode: mode
-  })).then(handleError).then(handleContent);
+  }));
 };
 /**
  * 改
@@ -1193,19 +1446,14 @@ var put = function put(input) {
       mode = _init$mode3 === void 0 ? 'no-cors' : _init$mode3,
       rest = _objectWithoutProperties(init, ["headers", "body", "mode"]);
 
-  var _reqData2 = reqData(body),
-      mime = _reqData2.mime,
-      data = _reqData2.data;
-
-  var h = new Headers(headers);
-  h.set('Content-Type', mime);
-  h.set('Accept', MIME_JSON);
-  return fetch(input, _objectSpread({}, rest, {
-    method: 'PUT',
-    headers: h,
-    body: data,
+  return fetchProcess(input, _objectSpread({}, rest, {
+    method: 'PUT'
+  }, reqHeadersAndBody({
+    headers: headers,
+    body: body
+  }), {
     mode: mode
-  })).then(handleError).then(handleContent);
+  }));
 };
 /**
  * 删
@@ -1226,13 +1474,13 @@ var del = function del(input) {
       mode = _init$mode4 === void 0 ? 'no-cors' : _init$mode4,
       rest = _objectWithoutProperties(init, ["headers", "mode"]);
 
-  var h = new Headers(headers);
-  h.set('Accept', MIME_JSON);
-  return fetch(input, _objectSpread({}, rest, {
-    method: 'DELETE',
-    headers: h,
+  return fetchProcess(input, _objectSpread({}, rest, {
+    method: 'DELETE'
+  }, reqHeadersAndBody({
+    headers: headers
+  }), {
     mode: mode
-  })).then(handleError).then(handleContent);
+  }));
 };
 /**
  * api
@@ -1246,19 +1494,6 @@ var api = {
   get: get,
   put: put,
   delete: del
-};
-
-// 21.2.5.3 get RegExp.prototype.flags
-
-var _flags = function () {
-  var that = _anObject(this);
-  var result = '';
-  if (that.global) result += 'g';
-  if (that.ignoreCase) result += 'i';
-  if (that.multiline) result += 'm';
-  if (that.unicode) result += 'u';
-  if (that.sticky) result += 'y';
-  return result;
 };
 
 // 21.2.5.3 get RegExp.prototype.flags()
@@ -1288,12 +1523,6 @@ if (_fails(function () { return $toString.call({ source: 'a', flags: 'b' }) != '
   });
 }
 
-// 7.2.1 RequireObjectCoercible(argument)
-var _defined = function (it) {
-  if (it == undefined) throw TypeError("Can't call method on  " + it);
-  return it;
-};
-
 // true  -> String#at
 // false -> String#codePointAt
 var _stringAt = function (TO_STRING) {
@@ -1309,78 +1538,6 @@ var _stringAt = function (TO_STRING) {
       : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
   };
 };
-
-// fallback for non-array-like ES3 and non-enumerable old V8 strings
-
-// eslint-disable-next-line no-prototype-builtins
-var _iobject = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
-  return _cof(it) == 'String' ? it.split('') : Object(it);
-};
-
-// to indexed object, toObject with fallback for non-array-like ES3 strings
-
-
-var _toIobject = function (it) {
-  return _iobject(_defined(it));
-};
-
-var max = Math.max;
-var min$1 = Math.min;
-var _toAbsoluteIndex = function (index, length) {
-  index = _toInteger(index);
-  return index < 0 ? max(index + length, 0) : min$1(index, length);
-};
-
-// false -> Array#indexOf
-// true  -> Array#includes
-
-
-
-var _arrayIncludes = function (IS_INCLUDES) {
-  return function ($this, el, fromIndex) {
-    var O = _toIobject($this);
-    var length = _toLength(O.length);
-    var index = _toAbsoluteIndex(fromIndex, length);
-    var value;
-    // Array#includes uses SameValueZero equality algorithm
-    // eslint-disable-next-line no-self-compare
-    if (IS_INCLUDES && el != el) while (length > index) {
-      value = O[index++];
-      // eslint-disable-next-line no-self-compare
-      if (value != value) return true;
-    // Array#indexOf ignores holes, Array#includes - not
-    } else for (;length > index; index++) if (IS_INCLUDES || index in O) {
-      if (O[index] === el) return IS_INCLUDES || index || 0;
-    } return !IS_INCLUDES && -1;
-  };
-};
-
-var shared = _shared('keys');
-
-var _sharedKey = function (key) {
-  return shared[key] || (shared[key] = _uid(key));
-};
-
-var arrayIndexOf = _arrayIncludes(false);
-var IE_PROTO = _sharedKey('IE_PROTO');
-
-var _objectKeysInternal = function (object, names) {
-  var O = _toIobject(object);
-  var i = 0;
-  var result = [];
-  var key;
-  for (key in O) if (key != IE_PROTO) _has(O, key) && result.push(key);
-  // Don't enum bug & hidden keys
-  while (names.length > i) if (_has(O, key = names[i++])) {
-    ~arrayIndexOf(result, key) || result.push(key);
-  }
-  return result;
-};
-
-// IE 8- don't enum bug keys
-var _enumBugKeys = (
-  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
-).split(',');
 
 // 19.1.2.14 / 15.2.3.14 Object.keys(O)
 
@@ -1505,7 +1662,7 @@ var _iterDefine = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORC
       // Set @@toStringTag to native iterators
       _setToStringTag(IteratorPrototype, TAG, true);
       // fix for some old engines
-      if (typeof IteratorPrototype[ITERATOR$3] != 'function') _hide(IteratorPrototype, ITERATOR$3, returnThis);
+      if (!_library && typeof IteratorPrototype[ITERATOR$3] != 'function') _hide(IteratorPrototype, ITERATOR$3, returnThis);
     }
   }
   // fix Array#{values, @@iterator}.name in V8 / FF
@@ -1514,7 +1671,7 @@ var _iterDefine = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORC
     $default = function values() { return $native.call(this); };
   }
   // Define iterator
-  if (BUGGY || VALUES_BUG || !proto[ITERATOR$3]) {
+  if ((!_library || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR$3])) {
     _hide(proto, ITERATOR$3, $default);
   }
   // Plug for library
@@ -1858,12 +2015,12 @@ _fixReWks('replace', 2, function (defined, REPLACE, $replace, maybeCallNative) {
           break;
         default: // \d\d?
           var n = +ch;
-          if (n === 0) return ch;
+          if (n === 0) return match;
           if (n > m) {
             var f = floor$1(n / 10);
-            if (f === 0) return ch;
+            if (f === 0) return match;
             if (f <= m) return captures[f - 1] === undefined ? ch.charAt(1) : captures[f - 1] + ch.charAt(1);
-            return ch;
+            return match;
           }
           capture = captures[n - 1];
       }
@@ -1893,12 +2050,6 @@ var decodeBase64 = function decodeBase64(str) {
   return decodeURIComponent(Array.from(window.atob(str)).map(function (c) {
     return "%".concat("00".concat(c.charCodeAt(0).toString(16)).slice(-2));
   }).join(''));
-};
-
-var f$2 = {}.propertyIsEnumerable;
-
-var _objectPie = {
-	f: f$2
 };
 
 var isEnum = _objectPie.f;
@@ -2005,17 +2156,17 @@ var DOMIterables = {
   TouchList: false
 };
 
-for (var collections = _objectKeys(DOMIterables), i = 0; i < collections.length; i++) {
-  var NAME = collections[i];
+for (var collections = _objectKeys(DOMIterables), i$1 = 0; i$1 < collections.length; i$1++) {
+  var NAME = collections[i$1];
   var explicit = DOMIterables[NAME];
   var Collection = _global[NAME];
-  var proto = Collection && Collection.prototype;
+  var proto$1 = Collection && Collection.prototype;
   var key;
-  if (proto) {
-    if (!proto[ITERATOR$4]) _hide(proto, ITERATOR$4, ArrayValues);
-    if (!proto[TO_STRING_TAG]) _hide(proto, TO_STRING_TAG, NAME);
+  if (proto$1) {
+    if (!proto$1[ITERATOR$4]) _hide(proto$1, ITERATOR$4, ArrayValues);
+    if (!proto$1[TO_STRING_TAG]) _hide(proto$1, TO_STRING_TAG, NAME);
     _iterators[NAME] = ArrayValues;
-    if (explicit) for (key in es6_array_iterator) if (!proto[key]) _redefine(proto, key, es6_array_iterator[key], true);
+    if (explicit) for (key in es6_array_iterator) if (!proto$1[key]) _redefine(proto$1, key, es6_array_iterator[key], true);
   }
 }
 
@@ -2085,7 +2236,7 @@ var _validateCollection = function (it, TYPE) {
   return it;
 };
 
-var dP$1 = _objectDp.f;
+var dP$2 = _objectDp.f;
 
 
 
@@ -2168,7 +2319,7 @@ var _collectionStrong = {
         return !!getEntry(_validateCollection(this, NAME), key);
       }
     });
-    if (_descriptors) dP$1(C.prototype, 'size', {
+    if (_descriptors) dP$2(C.prototype, 'size', {
       get: function () {
         return _validateCollection(this, NAME)[SIZE];
       }
@@ -2227,56 +2378,6 @@ var _collectionStrong = {
     // add [@@species], 23.1.2.2, 23.2.2.2
     _setSpecies(NAME);
   }
-};
-
-var gOPD = Object.getOwnPropertyDescriptor;
-
-var f$3 = _descriptors ? gOPD : function getOwnPropertyDescriptor(O, P) {
-  O = _toIobject(O);
-  P = _toPrimitive$1(P, true);
-  if (_ie8DomDefine) try {
-    return gOPD(O, P);
-  } catch (e) { /* empty */ }
-  if (_has(O, P)) return _propertyDesc(!_objectPie.f.call(O, P), O[P]);
-};
-
-var _objectGopd = {
-	f: f$3
-};
-
-// Works with __proto__ only. Old v8 can't work with null proto objects.
-/* eslint-disable no-proto */
-
-
-var check = function (O, proto) {
-  _anObject(O);
-  if (!_isObject(proto) && proto !== null) throw TypeError(proto + ": can't set as prototype!");
-};
-var _setProto = {
-  set: Object.setPrototypeOf || ('__proto__' in {} ? // eslint-disable-line
-    function (test, buggy, set) {
-      try {
-        set = _ctx(Function.call, _objectGopd.f(Object.prototype, '__proto__').set, 2);
-        set(test, []);
-        buggy = !(test instanceof Array);
-      } catch (e) { buggy = true; }
-      return function setPrototypeOf(O, proto) {
-        check(O, proto);
-        if (buggy) O.__proto__ = proto;
-        else set(O, proto);
-        return O;
-      };
-    }({}, false) : undefined),
-  check: check
-};
-
-var setPrototypeOf = _setProto.set;
-var _inheritIfRequired = function (that, target, C) {
-  var S = target.constructor;
-  var P;
-  if (S !== C && typeof S == 'function' && (P = S.prototype) !== C.prototype && _isObject(P) && setPrototypeOf) {
-    setPrototypeOf(that, P);
-  } return that;
 };
 
 var _collection = function (NAME, wrapper, methods, common, IS_MAP, IS_WEAK) {
@@ -2563,10 +2664,10 @@ var machine = (function (dict) {
   };
 });
 
-var f$4 = Object.getOwnPropertySymbols;
+var f$5 = Object.getOwnPropertySymbols;
 
 var _objectGops = {
-	f: f$4
+	f: f$5
 };
 
 // 19.1.2.1 Object.assign(target, source, ...)
@@ -2847,15 +2948,6 @@ _export(_export.P, 'Array', {
 });
 
 _addToUnscopables('includes');
-
-// 7.2.8 IsRegExp(argument)
-
-
-var MATCH = _wks('match');
-var _isRegexp = function (it) {
-  var isRegExp;
-  return _isObject(it) && ((isRegExp = it[MATCH]) !== undefined ? !!isRegExp : _cof(it) == 'RegExp');
-};
 
 // helper for String#{startsWith, endsWith, includes}
 

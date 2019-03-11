@@ -34,13 +34,14 @@ const handleError = (res) => {
 /**
  * 数据类型过滤，仅接收JSON
  * @param {Response} res - 服务器响应
- * @return {(Response|Promise)}
+ * @return {Promise}
  * @private
  */
 const handleContent = (res) => {
   const contentType = res.headers.get('content-type');
+  const isJson = new RegExp(MIME_JSON, 'i');
 
-  if (/application\/json/i.test(contentType)) {
+  if (isJson.test(contentType)) {
     return res.json();
   }
 
@@ -48,7 +49,21 @@ const handleContent = (res) => {
 };
 
 /**
- * 整理请求数据
+ * fetch统一逻辑
+ * @description 处理非网络错误、要求res必须是application/json
+ * @param {(Request|string)} input - 请求地址
+ * @param {Object} init - fetch配置
+ * @return {Promise}
+ * @private
+ */
+const fetchProcess = (input, init) => (
+  fetch(input, init)
+    .then(handleError)
+    .then(handleContent)
+);
+
+/**
+ * 整理请求数据，返回mime类型和规范的data格式
  * @param {(FormData|JSON)} body
  * @return {Object}
  * @private
@@ -64,6 +79,38 @@ const reqData = (body) => {
   return {
     mime: MIME_JSON,
     data: JSON.stringify(body),
+  };
+};
+
+/**
+ * 整理请求实体，添加必要的Header
+ * @param {Object} init
+ * @param {Object} [init.headers]
+ * @param {(FormData|JSON)} [init.body]
+ * @return {Object}
+ * @private
+ */
+const reqHeadersAndBody = (init = {}) => {
+  const {
+    headers,
+    body,
+  } = init;
+
+  const h = new Headers(headers);
+  h.set('Accept', MIME_JSON);
+
+  if (typeof body === 'undefined') {
+    return {
+      headers: h,
+    };
+  }
+
+  const { mime, data } = reqData(body);
+  h.set('Content-Type', mime);
+
+  return {
+    headers: h,
+    body: data,
   };
 };
 
@@ -84,21 +131,12 @@ const post = (input, init = {}) => {
     ...rest
   } = init;
 
-  const { mime, data } = reqData(body);
-
-  const h = new Headers(headers);
-  h.set('Content-Type', mime);
-  h.set('Accept', MIME_JSON);
-
-  return fetch(input, {
+  return fetchProcess(input, {
     ...rest,
     method: 'POST',
-    headers: h,
-    body: data,
+    ...reqHeadersAndBody({ headers, body }),
     mode,
-  })
-    .then(handleError)
-    .then(handleContent);
+  });
 };
 
 /**
@@ -116,17 +154,12 @@ const get = (input, init = {}) => {
     ...rest
   } = init;
 
-  const h = new Headers(headers);
-  h.set('Accept', MIME_JSON);
-
-  return fetch(input, {
+  return fetchProcess(input, {
     ...rest,
     method: 'GET',
-    headers: h,
+    ...reqHeadersAndBody({ headers }),
     mode,
-  })
-    .then(handleError)
-    .then(handleContent);
+  });
 };
 
 /**
@@ -146,21 +179,12 @@ const put = (input, init = {}) => {
     ...rest
   } = init;
 
-  const { mime, data } = reqData(body);
-
-  const h = new Headers(headers);
-  h.set('Content-Type', mime);
-  h.set('Accept', MIME_JSON);
-
-  return fetch(input, {
+  return fetchProcess(input, {
     ...rest,
     method: 'PUT',
-    headers: h,
-    body: data,
+    ...reqHeadersAndBody({ headers, body }),
     mode,
-  })
-    .then(handleError)
-    .then(handleContent);
+  });
 };
 
 /**
@@ -179,17 +203,12 @@ const del = (input, init = {}) => {
     ...rest
   } = init;
 
-  const h = new Headers(headers);
-  h.set('Accept', MIME_JSON);
-
-  return fetch(input, {
+  return fetchProcess(input, {
     ...rest,
     method: 'DELETE',
-    headers: h,
+    ...reqHeadersAndBody({ headers }),
     mode,
-  })
-    .then(handleError)
-    .then(handleContent);
+  });
 };
 
 /**
@@ -205,3 +224,9 @@ const api = {
 };
 
 export default api;
+export {
+  handleError,
+  handleContent,
+  reqData,
+  reqHeadersAndBody,
+};
