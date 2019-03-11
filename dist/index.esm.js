@@ -1343,6 +1343,7 @@ var reqData = function reqData(body) {
  * @param {Object} [init.headers]
  * @param {(FormData|JSON)} [init.body]
  * @return {Object}
+ * @private
  */
 
 
@@ -1662,7 +1663,7 @@ var _iterDefine = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORC
       // Set @@toStringTag to native iterators
       _setToStringTag(IteratorPrototype, TAG, true);
       // fix for some old engines
-      if (!_library && typeof IteratorPrototype[ITERATOR$3] != 'function') _hide(IteratorPrototype, ITERATOR$3, returnThis);
+      if (typeof IteratorPrototype[ITERATOR$3] != 'function') _hide(IteratorPrototype, ITERATOR$3, returnThis);
     }
   }
   // fix Array#{values, @@iterator}.name in V8 / FF
@@ -1671,7 +1672,7 @@ var _iterDefine = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORC
     $default = function values() { return $native.call(this); };
   }
   // Define iterator
-  if ((!_library || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR$3])) {
+  if (BUGGY || VALUES_BUG || !proto[ITERATOR$3]) {
     _hide(proto, ITERATOR$3, $default);
   }
   // Plug for library

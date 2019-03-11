@@ -7,15 +7,6 @@ import bindCustomEvent from '../src/bindCustomEvent';
 
 chai.should();
 
-const domStr = `
-<!DOCTYPE html>
-<html>
-<body>
-  <p>Hello world</p>
-</body>
-</html>
-`;
-
 describe('bindCustomEvent', () => {
   const spyEventA = sinon.spy();
   const spyEventB = sinon.spy();
@@ -29,7 +20,7 @@ describe('bindCustomEvent', () => {
         CustomEvent,
         document,
       },
-    } = new JSDOM(domStr);
+    } = new JSDOM();
 
     global.document = document;
 

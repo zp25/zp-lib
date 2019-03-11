@@ -1,58 +1,64 @@
 /* eslint no-unused-expressions: 0 */
 
 import chai from 'chai';
-import { JSDOM } from 'jsdom';
 import sinon from 'sinon';
 import dispatch from '../src/dispatch';
 
 chai.should();
 
-const domStr = `
-<!DOCTYPE html>
-<html>
-<body>
-  <ul class="anchor-list">
-    <li><a href="#linkA" data-trigger="link" data-value="A">Link A</a></li>
-    <li><a href="#linkB" data-trigger="link" data-value="B">Link B</a></li>
-    <li><a href="#linkC" data-trigger="link" data-value="C">Link C</a></li>
-  </ul>
-
-  <button data-trigger="button">Button A</button>
-</body>
-</html>
-`;
+const buildEvent = type => (
+  type
+    ? { target: { dataset: { trigger: type } } }
+    : { target: { dataset: {} } }
+);
 
 describe('dispatch', () => {
-  const spyLink = sinon.spy();
+  const spyFoo = sinon.spy();
+  const spyBar = sinon.spy();
+
+  let listener = null;
 
   before(() => {
-    const {
-      window: { document },
-    } = new JSDOM(domStr);
-    global.document = document;
-
-    const clickHandlers = {
-      link: spyLink,
+    const handlers = {
+      foo: spyFoo,
+      bar: spyBar,
     };
 
-    document.body.addEventListener('click', dispatch(clickHandlers));
+    listener = dispatch(handlers);
   });
 
   afterEach(() => {
-    spyLink.resetHistory();
+    spyFoo.resetHistory();
+    spyBar.resetHistory();
   });
 
   it('正确分发事件', () => {
-    document.querySelector('a[data-value="A"]').click();
-    document.querySelector('a[data-value="B"]').click();
-    document.querySelector('a[data-value="C"]').click();
+    const fooEvent = buildEvent('foo');
+    const barEvent = buildEvent('bar');
 
-    spyLink.calledThrice.should.be.true;
+    listener(fooEvent);
+    listener(barEvent);
+    listener(fooEvent);
+
+    spyFoo.calledTwice.should.be.true;
+    spyBar.calledOnce.should.be.true;
+  });
+
+  it('没有trigger配置时无反应', () => {
+    const emptyEvent = buildEvent();
+
+    listener(emptyEvent);
+
+    spyFoo.callCount.should.equal(0);
+    spyBar.callCount.should.equal(0);
   });
 
   it('没有匹配处理函数时无反应', () => {
-    document.querySelector('button').click();
+    const bazEvent = buildEvent('baz');
 
-    spyLink.callCount.should.equal(0);
+    listener(bazEvent);
+
+    spyFoo.callCount.should.equal(0);
+    spyBar.callCount.should.equal(0);
   });
 });

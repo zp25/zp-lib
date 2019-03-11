@@ -7,21 +7,12 @@ import {
 
 chai.should();
 
-const domStr = `
-<!DOCTYPE html>
-<html>
-<body>
-  <p>Hello world</p>
-</body>
-</html>
-`;
-
 describe('base64', () => {
   const raw = 'hello你好';
   const code = 'aGVsbG/kvaDlpb0=';
 
   before(() => {
-    const { window } = new JSDOM(domStr);
+    const { window } = new JSDOM();
 
     global.window = window;
   });
