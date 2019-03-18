@@ -7,28 +7,51 @@ const MIME_JSON = 'application/json';
 const MIME_FORMDATA = 'multipart/form-data';
 
 /**
+ * res.ok非true
+ * @param {string} message
+ * @ignore
+ */
+function ResponseNotOkError(message) {
+  this.name = 'ResponseNotOkError';
+  this.message = message || 'Response not Ok Error';
+}
+
+ResponseNotOkError.prototype = Object.create(Error.prototype);
+ResponseNotOkError.prototype.constructor = ResponseNotOkError;
+
+/**
+ * res.body数据格式不规范错误
+ * @param {string} message
+ * @ignore
+ */
+function ResponseNotJSONError(message) {
+  this.name = 'ResponseNotJSONError';
+  this.message = message || 'Response not JSON Error';
+}
+
+ResponseNotJSONError.prototype = Object.create(Error.prototype);
+ResponseNotJSONError.prototype.constructor = ResponseNotJSONError;
+
+/**
  * 错误处理，例如404
  * @param {Response} res - 服务器响应
  * @return {(Response|Promise)}
  * @private
  */
 const handleError = (res) => {
-  // const { ok, statusText } = res;
-  const { ok, status } = res;
+  const {
+    ok,
+    status,
+    statusText,
+  } = res;
 
   if (ok) {
     return res;
   }
 
-  // status替代statusText
-  // 因为res.body有message字段描述错误，但没有status/code字段
-  const err = new Error(status);
+  const err = new ResponseNotOkError(`${status} - ${statusText}`);
 
-  return res.json().then((body) => {
-    err.body = body;
-
-    return Promise.reject(err);
-  });
+  return Promise.reject(err);
 };
 
 /**
@@ -45,7 +68,9 @@ const handleContent = (res) => {
     return res.json();
   }
 
-  return Promise.reject(new Error('Not a JSON'));
+  const err = new ResponseNotJSONError();
+
+  return Promise.reject(err);
 };
 
 /**
@@ -225,6 +250,8 @@ const api = {
 
 export default api;
 export {
+  ResponseNotOkError,
+  ResponseNotJSONError,
   handleError,
   handleContent,
   reqData,

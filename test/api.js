@@ -6,6 +6,8 @@ import rewire from 'rewire';
 import 'isomorphic-fetch';
 import FormData from 'form-data';
 import {
+  ResponseNotOkError,
+  ResponseNotJSONError,
   handleError,
   handleContent,
   reqData,
@@ -28,11 +30,10 @@ describe('api', () => {
       handleError(res).should.eql(res);
     });
 
-    it('请求失败(!res.ok)返回Promise，rejected with Error', () => {
-      const body = JSON.stringify({ error: true });
-      const res = new Response(body, { status: 404 });
+    it('请求失败(!res.ok)返回Promise，rejected with ResponseNotOkError', () => {
+      const res = new Response(null, { status: 404 });
 
-      handleError(res).should.be.rejectedWith(Error);
+      handleError(res).should.be.rejectedWith(ResponseNotOkError);
     });
   });
 
@@ -49,7 +50,7 @@ describe('api', () => {
       handleContent(res).should.eventually.eql(body);
     });
 
-    it('若res不是json，返回Promise，rejected with Error', () => {
+    it('若res不是json，返回Promise，rejected with ResponseNotJSONError', () => {
       const res = new Response('Hello World', {
         status: 200,
         headers: {
@@ -57,7 +58,7 @@ describe('api', () => {
         },
       });
 
-      handleContent(res).should.be.rejectedWith(Error);
+      handleContent(res).should.be.rejectedWith(ResponseNotJSONError);
     });
   });
 

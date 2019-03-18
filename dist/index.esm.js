@@ -1257,10 +1257,36 @@ _export(_export.S + _export.F * !(USE_NATIVE && _iterDetect(function (iter) {
 
 /**
  * @module api
- * @description 接口
+ * @description API Abstraction，请求数据仅支持json和form-data，响应数据仅支持json
  */
 var MIME_JSON = 'application/json';
 var MIME_FORMDATA = 'multipart/form-data';
+/**
+ * res.ok非true
+ * @param {string} message
+ * @ignore
+ */
+
+function ResponseNotOkError(message) {
+  this.name = 'ResponseNotOkError';
+  this.message = message || 'Response not Ok Error';
+}
+
+ResponseNotOkError.prototype = Object.create(Error.prototype);
+ResponseNotOkError.prototype.constructor = ResponseNotOkError;
+/**
+ * res.body数据格式不规范错误
+ * @param {string} message
+ * @ignore
+ */
+
+function ResponseNotJSONError(message) {
+  this.name = 'ResponseNotJSONError';
+  this.message = message || 'Response not JSON Error';
+}
+
+ResponseNotJSONError.prototype = Object.create(Error.prototype);
+ResponseNotJSONError.prototype.constructor = ResponseNotJSONError;
 /**
  * 错误处理，例如404
  * @param {Response} res - 服务器响应
@@ -1269,21 +1295,16 @@ var MIME_FORMDATA = 'multipart/form-data';
  */
 
 var handleError = function handleError(res) {
-  // const { ok, statusText } = res;
   var ok = res.ok,
-      status = res.status;
+      status = res.status,
+      statusText = res.statusText;
 
   if (ok) {
     return res;
-  } // status替代statusText
-  // 因为res.body有message字段描述错误，但没有status/code字段
+  }
 
-
-  var err = new Error(status);
-  return res.json().then(function (body) {
-    err.body = body;
-    return Promise.reject(err);
-  });
+  var err = new ResponseNotOkError("".concat(status, " - ").concat(statusText));
+  return Promise.reject(err);
 };
 /**
  * 数据类型过滤，仅接收JSON
@@ -1301,7 +1322,8 @@ var handleContent = function handleContent(res) {
     return res.json();
   }
 
-  return Promise.reject(new Error('Not a JSON'));
+  var err = new ResponseNotJSONError();
+  return Promise.reject(err);
 };
 /**
  * fetch统一逻辑
@@ -1663,7 +1685,7 @@ var _iterDefine = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORC
       // Set @@toStringTag to native iterators
       _setToStringTag(IteratorPrototype, TAG, true);
       // fix for some old engines
-      if (typeof IteratorPrototype[ITERATOR$3] != 'function') _hide(IteratorPrototype, ITERATOR$3, returnThis);
+      if (!_library && typeof IteratorPrototype[ITERATOR$3] != 'function') _hide(IteratorPrototype, ITERATOR$3, returnThis);
     }
   }
   // fix Array#{values, @@iterator}.name in V8 / FF
@@ -1672,7 +1694,7 @@ var _iterDefine = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORC
     $default = function values() { return $native.call(this); };
   }
   // Define iterator
-  if (BUGGY || VALUES_BUG || !proto[ITERATOR$3]) {
+  if ((!_library || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR$3])) {
     _hide(proto, ITERATOR$3, $default);
   }
   // Plug for library
