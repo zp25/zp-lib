@@ -94,11 +94,13 @@ const core = data => (key) => {
 const templater = (strs, ...keys) => (data) => {
   const arr = Array.isArray(data) ? data : [data];
 
-  const result = arr.map(d => (
-    keys.reduce((prev, key, i) => (
-      prev + core(d)(key) + strs[i + 1]
-    ), strs[0])
-  ));
+  const result = arr.map((d) => {
+    const replace = core(d);
+
+    return keys.reduce((prev, key, i) => (
+      prev + replace(key) + strs[i + 1]
+    ), strs[0]);
+  });
 
   return result.join('');
 };
@@ -122,11 +124,13 @@ const templater = (strs, ...keys) => (data) => {
 const templaterAsync = (strs, ...keys) => (data) => {
   const arr = Array.isArray(data) ? data : [data];
 
-  return Promise.all(arr.map(d => (
-    Promise.all(keys.map(core(d))).then(resolved => (
+  return Promise.all(arr.map((d) => {
+    const replace = core(d);
+
+    return Promise.all(keys.map(replace)).then(resolved => (
       resolved.reduce((prev, r, i) => prev + r + strs[i + 1], strs[0])
-    ))
-  ))).then(result => result.join(''));
+    ));
+  })).then(result => result.join(''));
 };
 // const templaterAsync = (strs, ...keys) => async (data) => {
 //   const arr = Array.isArray(data) ? data : [data];
