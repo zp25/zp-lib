@@ -9,6 +9,7 @@ module.exports = (api) => {
       {
         modules: false,
         useBuiltIns: 'usage',
+        corejs: 3,
       },
     ]);
   }
