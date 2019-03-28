@@ -2,6 +2,7 @@ import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import { eslint } from 'rollup-plugin-eslint';
 import babel from 'rollup-plugin-babel';
+import { terser } from 'rollup-plugin-terser';
 import pkg from './package.json';
 
 export default [
@@ -20,17 +21,17 @@ export default [
       },
     ],
     plugins: [
-      resolve({
-        module: true,
-        main: true,
-      }),
       eslint(),
       babel({
         exclude: 'node_modules/**',
         externalHelpers: false,
       }),
+      resolve({
+        module: true,
+        main: true,
+      }),
       commonjs(),
+      terser(),
     ],
-    external: id => /whatwg-fetch/.test(id),
   },
 ];

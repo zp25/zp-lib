@@ -9,6 +9,7 @@
     "start": "rollup -c -w",
     "build": "rollup -c",
     "test": "cross-env BABEL_ENV=test nyc mocha --harmony --require @babel/register",
+    "analyze": "source-map-explorer",
     "prejsdoc": "rimraf docs/*",
     "jsdoc": "jsdoc -r -c jsdoc.json -d docs",
     "open": "open docs/index.html"
@@ -54,7 +55,9 @@
     "rollup-plugin-commonjs": "^9.2.2",
     "rollup-plugin-eslint": "^5.1.0",
     "rollup-plugin-node-resolve": "^4.0.1",
-    "sinon": "^7.3.0"
+    "rollup-plugin-terser": "^4.0.4",
+    "sinon": "^7.3.1",
+    "source-map-explorer": "^1.8.0"
   },
   "engines": {
     "node": ">=8.15.0"
