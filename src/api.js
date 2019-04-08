@@ -117,10 +117,11 @@ const reqData = (body) => {
  */
 const reqHeadersAndBody = (init = {}) => {
   const {
-    headers,
+    headers = {},
     body,
   } = init;
 
+  // edge传入undefined报参数无效错误, headers改为空对象
   const h = new Headers(headers);
   h.set('Accept', MIME_JSON);
 
