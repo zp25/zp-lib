@@ -2,119 +2,119 @@
 
 import chai from 'chai';
 import sinon from 'sinon';
-import Subject from '../src/subject';
+import Subject, { InvalidObserverError } from '../src/subject';
 
 chai.should();
 
 describe('Subject', () => {
-  describe('Properties', () => {
-    let subject = null;
+  let subject = null;
 
-    before(() => {
-      subject = new Subject();
-    });
-
-    it('observers, 空array', () => {
-      subject.observers.should.be.an('array');
-      subject.observers.should.be.empty;
-    });
-
-    it('state, 空object', () => {
-      subject.state.should.eql({});
-    });
+  beforeEach(() => {
+    subject = new Subject();
   });
 
-  describe('Methods', () => {
-    let subject = null;
+  it('static isValidObserver, 判断是否合规observer', () => {
+    const observerC = { update: () => true };
 
-    // 测试observer
-    let spyUpdateA = null;
-    let spyUpdateB = null;
-    let observerA = null;
-    let observerB = null;
-    // 统计notify信息
-    let spyNotify = null;
+    Subject.isValidObserver(null).should.be.false;
+    Subject.isValidObserver('str').should.be.false;
+    Subject.isValidObserver({}).should.be.false;
+    Subject.isValidObserver({ update: 'str' }).should.be.false;
 
-    // 测试状态
-    let stateA = null;
-    let stateB = null;
+    Subject.isValidObserver({ update: () => true }).should.be.true;
+  });
 
-    before(() => {
-      spyUpdateA = sinon.spy();
-      spyUpdateB = sinon.spy();
+  it('observers, 空array', () => {
+    subject.observers.should.be.an('array');
+    subject.observers.should.be.empty;
+  });
 
-      observerA = { update: spyUpdateA };
-      observerB = { update: spyUpdateB };
+  it('state, 空object', () => {
+    subject.state.should.eql({});
+  });
 
-      stateA = { foo: 1, bar: 2 };
-      stateB = { baz: 3 };
-    });
+  it('attach, 添加observers，传入Object[]添加多项，返回observers个数', () => {
+    const observerA = { update: () => true };
+    const observerB = { update: () => true };
+    const observerC = { update: () => true };
 
-    beforeEach(() => {
-      subject = new Subject();
+    const len = subject.attach(observerA);
+    subject.attach([observerB, observerC]);
 
-      spyNotify = sinon.spy(subject, 'notify');
-    });
+    len.should.equal(1);
+    subject.observers.should.eql([observerA, observerB, observerC]);
+  });
 
-    afterEach(() => {
-      spyUpdateA.resetHistory();
-      spyUpdateB.resetHistory();
+  it('attach, 若observer已绑定，不会再次添加', () => {
+    const observerA = { update: () => true };
 
-      spyNotify.resetHistory();
-    });
+    subject.attach(observerA);
+    subject.attach(observerA);
 
-    it('attach, 绑定observer实例到subject.observers', () => {
-      subject.attach(observerA);
-      subject.attach(observerB);
+    subject.observers.should.eql([observerA]);
+  });
 
-      subject.observers.should.include(observerA);
-      subject.observers.should.include(observerB);
-    });
+  it('attach, 传入不合法observer将抛出InvalidObserverError', () => {
+    const observerB = { update: () => true };
+    const observerC = { update: () => true };
 
-    it('attach, 若observer已绑定，不会再次添加', () => {
-      subject.attach(observerA);
-      subject.attach(observerA);
+    const nullObserver = () => { subject.attach(null); };
+    nullObserver.should.throw(InvalidObserverError);
 
-      subject.observers.should.have.lengthOf(1);
-    });
+    const notObjObserver = () => { subject.attach('str'); };
+    notObjObserver.should.throw(InvalidObserverError);
 
-    it('detach, 从subject.observers移除observer实例', () => {
-      subject.attach(observerA);
+    const noUpdateMetodObserver = () => { subject.attach({}); };
+    noUpdateMetodObserver.should.throw(InvalidObserverError);
 
-      subject.detach(observerA);
+    const errUpdateObserver = () => { subject.attach({ update: 'str' }); };
+    errUpdateObserver.should.throw(InvalidObserverError);
+  });
 
-      subject.observers.should.not.include(observerA);
-    });
+  it('detach, 移除指定observer，传入Object[]移除多项，返回剩余observers个数', () => {
+    const observerA = { update: () => true };
+    const observerB = { update: () => true };
+    const observerC = { update: () => true };
 
-    it('state, 读取和更新状态，多次更新以合并方式执行', () => {
-      subject.state = stateA;
-      subject.state.should.eql(stateA);
+    // 依赖attach测试
+    subject.attach([observerA, observerB, observerC]);
 
-      subject.state = stateB;
+    const len = subject.detach(observerA);
+    const len2 = subject.detach([observerB, observerC]);
 
-      const state = Object.assign({}, stateA, stateB);
-      subject.state.should.eql(state);
-    });
+    len.should.equal(2);
+    len2.should.equal(0);
+  });
 
-    it('state, 每次更新都触发notify', () => {
-      subject.state = stateA;
-      spyNotify.calledOnce.should.be.true;
+  it('setState, 更新subject.state, 以合并方式执行, 每次更新都触发notify', () => {
+    const spyNotify = sinon.spy();
+    subject.notify = spyNotify;
 
-      subject.state = stateB;
-      spyNotify.calledTwice.should.be.true;
-    });
+    subject.setState({ foo: 'foo' });
+    subject.state.should.eql({ foo: 'foo' });
+    spyNotify.calledOnce.should.be.true;
 
-    it('notify, 调用所有observer的update方法，接收state和prevState', () => {
-      subject.attach(observerA);
-      subject.attach(observerB);
+    subject.setState({ bar: 'bar' });
+    subject.state.should.eql({ foo: 'foo', bar: 'bar' });
+    spyNotify.calledTwice.should.be.true;
 
-      subject.state = stateA;
-      subject.state = stateB;
+    subject.setState({ foo: 'newFoo' });
+    subject.state.should.eql({ foo: 'newFoo', bar: 'bar' });
+    spyNotify.calledThrice.should.be.true;
+  });
 
-      const state = Object.assign({}, stateA, stateB);
+  it('notify, 调用observers的update方法, update参数接收state和prevState', () => {
+    const spyUpdateA = sinon.spy();
+    const spyUpdateB = sinon.spy();
 
-      spyUpdateA.secondCall.calledWithExactly(state, stateA).should.be.true;
-      spyUpdateB.secondCall.calledWithExactly(state, stateA).should.be.true;
-    });
+    // 依赖之前测试
+    subject.attach([{ update: spyUpdateA }, { update: spyUpdateB }]);
+
+    const foo = { foo: 'foo' };
+    subject.setState(foo);
+    subject.setState({ bar: 'bar' });
+
+    spyUpdateB.secondCall.calledWithExactly(subject.state, foo).should.be.true;
+    spyUpdateA.secondCall.calledWithExactly(subject.state, foo).should.be.true;
   });
 });
