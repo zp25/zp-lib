@@ -19,6 +19,7 @@
 + searchParams，返回object，存储location.search中的key-value对
 + storage，本地存储
 + Subject，观察者模式目标
++ Observer，观察者模式观察者
 + templater，模版引擎
   + templater，同步
   + templaterAsync，异步
