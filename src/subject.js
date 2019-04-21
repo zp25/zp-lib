@@ -33,25 +33,24 @@ class Subject {
     return !!(
       observer
       && typeof observer === 'object'
-      && ({}).hasOwnProperty.call(observer, 'update')
+      // && ({}).hasOwnProperty.call(observer, 'update')
       && typeof observer.update === 'function'
     );
   }
 
-  constructor() {
-    /**
-     * 观察者列表
-     * @type {Array.<Observer>}
-     * @private
-     */
-    this._observers = [];
-    /**
-     * 目标状态
-     * @type {Object}
-     * @private
-     */
-    this._state = {};
-  }
+  /**
+   * 观察者列表
+   * @type {Array.<Observer>}
+   * @protected
+   */
+  _observers = [];
+
+  /**
+   * 目标状态
+   * @type {Object}
+   * @protected
+   */
+  _state = {};
 
   /**
    * 绑定观察者
@@ -101,12 +100,23 @@ class Subject {
   }
 
   /**
-   * 获取和设置目标状态
+   * 获取状态
    * @type {Object}
    * @public
    */
   get state() {
     return Object.assign({}, this._state);
+  }
+
+  /**
+   * 初始化状态
+   */
+  set state(obj) {
+    if (typeof obj !== 'object' || !obj) {
+      throw new TypeError('not an Object');
+    }
+
+    this._state = Object.assign({}, obj);
   }
 
   /**
@@ -124,7 +134,7 @@ class Subject {
   /**
    * 通知观察者状态变化
    * @param {Object} prevState - 原状态
-   * @private
+   * @protected
    */
   notify(prevState) {
     this._observers.forEach((o) => {
@@ -135,7 +145,33 @@ class Subject {
   }
 }
 
+/**
+ * @class
+ * @description 观察者, 可以绑定到多个目标
+ */
+class Observer {
+  constructor(subject) {
+    if (subject instanceof Subject) {
+      subject.attach(this);
+    }
+  }
+
+  /**
+   * 必有方法
+   * @param {Subject} - 目标实例
+   * @return {Object}
+   */
+  update(subject) { // eslint-disable-line class-methods-use-this
+    if (subject instanceof Subject) {
+      return subject.state;
+    }
+
+    return undefined;
+  }
+}
+
 export default Subject;
 export {
   InvalidObserverError,
+  Observer,
 };

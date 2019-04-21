@@ -2,7 +2,10 @@
 
 import chai from 'chai';
 import sinon from 'sinon';
-import Subject, { InvalidObserverError } from '../src/subject';
+import Subject, {
+  InvalidObserverError,
+  Observer,
+} from '../src/subject';
 
 chai.should();
 
@@ -31,6 +34,31 @@ describe('Subject', () => {
 
   it('state, 空object', () => {
     subject.state.should.eql({});
+  });
+
+  it('state, 初始化状态，不触发notify', () => {
+    const spyNotify = sinon.spy();
+    subject.notify = spyNotify;
+
+    const result = {
+      foo: 'foo',
+      bar: 'bar',
+    };
+
+    subject.state = result;
+
+    subject.state.should.eql(result);
+    spyNotify.notCalled.should.be.true;
+  });
+
+  it('state, 传入非obj抛出TypeError', () => {
+    const str = () => { subject.state = ''; };
+    const empty = () => { subject.state = undefined; };
+    const nul = () => { subject.state = null; };
+
+    str.should.throw(TypeError);
+    empty.should.throw(TypeError);
+    nul.should.throw(TypeError);
   });
 
   it('attach, 添加observers，传入Object[]添加多项，返回observers个数', () => {
@@ -116,5 +144,37 @@ describe('Subject', () => {
 
     spyUpdateB.secondCall.calledWithExactly(subject.state, foo).should.be.true;
     spyUpdateA.secondCall.calledWithExactly(subject.state, foo).should.be.true;
+  });
+});
+
+describe('Observer', () => {
+  it('若初始化传入Suject实例, 自动绑定', () => {
+    const subject = new Subject();
+    const observer = new Observer(subject);
+
+    subject.observers.should.eql([observer]);
+  });
+
+  it('observer必须包含update方法', () => {
+    const observer = new Observer();
+
+    observer.update.should.be.a('function');
+  });
+
+  it('observer若传入Subject实例, 返回当前状态', () => {
+    const subject = new Subject();
+    const observer = new Observer();
+
+    const state = { foo: 'foo' };
+
+    subject.setState(state);
+
+    observer.update(subject).should.eql(state);
+  });
+
+  it('observer未传入Subject实例, 返回undefined', () => {
+    const observer = new Observer();
+
+    (typeof observer.update() === 'undefined').should.be.true;
   });
 });

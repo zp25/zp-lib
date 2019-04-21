@@ -11,7 +11,7 @@ import escapeHTML from './src/escapeHTML';
 import machine from './src/machine';
 import searchParams from './src/searchParams';
 import storage from './src/storage';
-import Subject from './src/subject';
+import Subject, { Observer } from './src/subject';
 import {
   templater,
   templaterAsync,
@@ -30,6 +30,7 @@ export {
   searchParams,
   storage,
   Subject,
+  Observer,
   templater,
   templaterAsync,
 };
