@@ -27,8 +27,7 @@ export default [
         externalHelpers: false,
       }),
       resolve({
-        module: true,
-        main: true,
+        mainFields: ['module', 'main'],
       }),
       commonjs(),
       terser(),

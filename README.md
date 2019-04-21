@@ -29,14 +29,11 @@
 
 浏览器支持情况
 
-    last 1 version
-    > 1%
-    not ie 11
-    not ie_mob 11
-    not op_mini all
-    not dead
+~~~bash
+npx browserslist
+~~~
 
-.browserslistrc配置
+见.browserslistrc
 
 ## 测试和文档
 

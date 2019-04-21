@@ -1,7 +1,7 @@
 language: node_js
 node_js:
   - "lts/*"
-cache: yarn
+cache: npm
 script:
   - npm run build
   - npm test
