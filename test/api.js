@@ -10,7 +10,6 @@ import {
   ResponseNotJSONError,
   handleError,
   handleContent,
-  reqData,
   reqHeadersAndBody,
 } from '../src/api';
 
@@ -62,74 +61,63 @@ describe('api', () => {
     });
   });
 
-  describe('reqData', () => {
-    it('若body为FormData，返回正确的mime和body', () => {
-      const body = new FormData();
-      body.append('foo', 'Foo');
-
-      reqData(body).should.eql({
-        mime: 'multipart/form-data',
-        data: body,
-      });
-    });
-
-    it('若body不是FormData，一律以json处理，数据需序列化', () => {
-      const body = 'Hello World';
-
-      reqData(body).should.eql({
-        mime: 'application/json',
-        data: JSON.stringify(body),
-      });
-    });
-  });
-
   describe('reqHeadersAndBody', () => {
-    it('若未设置body，返回对象中不包含body，headers不设置Content-Type，能正确设置Accept头部', () => {
+    it('不传入参数，返回对象中仅包含headers，其中设置了accept', () => {
       const check = ({ headers, body }) => (
         typeof body === 'undefined'
-        && headers.get('Accept') === 'application/json'
-        && headers.has('Content-Type') === false
+        && headers.get('accept') === 'application/json'
       );
 
       check(reqHeadersAndBody()).should.be.true;
     });
 
-    it('若有body，能正确配置Content-Type、Accept头部并规范data', () => {
-      const data = { data: 'Hello World' };
-
-      const checkJson = ({ headers, body }) => (
-        body === JSON.stringify(data)
-        && headers.get('Accept') === 'application/json'
-        && headers.get('Content-Type') === 'application/json'
+    it('传入参数不包含body，返回对象中包含headers，其中设置了accept', () => {
+      const check = ({ headers, body }) => (
+        typeof body === 'undefined'
+        && headers.get('accept') === 'application/json'
       );
 
-      const checkFormData = ({ headers, body }) => (
-        body instanceof FormData
-        && headers.get('Accept') === 'application/json'
-        && headers.get('Content-Type') === 'multipart/form-data'
-      );
-
-      checkJson(reqHeadersAndBody({ body: data })).should.be.true;
-      checkFormData(reqHeadersAndBody({ body: new FormData() })).should.be.true;
+      check(reqHeadersAndBody({})).should.be.true;
     });
 
-    it('不可自定义Accept、Content-Type头部，可添加额外头部', () => {
-      const customHeaders = {
-        accept: 'text/html',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-Custom-Header': 'Foo',
+    it('传入body为FormData，返回对象中包含body和headers，headers设置accpet', () => {
+      const check = ({ headers, body }) => (
+        body instanceof FormData
+        && headers.get('accept') === 'application/json'
+      );
+
+      check(reqHeadersAndBody({ body: new FormData() })).should.be.true;
+    });
+
+    it('传入body为可序列化对象，返回对象中包含序列化body，headers设置accpet，content-type为json', () => {
+      const data = {
+        foo: 'Foo',
+        bar: 'Bar',
       };
 
       const check = ({ headers, body }) => (
-        body instanceof FormData
-        && headers.get('Accept') === 'application/json'
-        && headers.get('Content-Type') === 'multipart/form-data'
-        && headers.get('X-Custom-Header') === 'Foo'
+        body === JSON.stringify(data)
+        && headers.get('accept') === 'application/json'
+        && headers.get('content-type') === 'application/json'
+      );
+
+      check(reqHeadersAndBody({ body: data })).should.be.true;
+    });
+
+    it('传入headers不可自定义Accept，可添加自定义头部', () => {
+      const customHeaders = {
+        accept: 'text/html',
+        'x-custom-header': 'Foo',
+      };
+
+      const check = ({ headers, body }) => (
+        typeof body === 'undefined'
+        && headers.get('accept') === 'application/json'
+        && headers.get('x-custom-header') === 'Foo'
       );
 
       check(reqHeadersAndBody({
         headers: customHeaders,
-        body: new FormData(),
       })).should.be.true;
     });
   });
@@ -137,20 +125,20 @@ describe('api', () => {
   describe('POST', () => {
     const { default: api } = wrapper;
 
-    it('正确发送POST请求', () => {
+    it('正确发送POST请求，正确初始化header, body, mode', () => {
       const data = { data: 'Hello World' };
 
       const fakeFetch = (input, {
         method,
-        body,
         headers,
+        body,
         mode,
       }) => (
         input === url
         && method === 'POST'
-        && body === JSON.stringify(data)
         && headers.get('Accept') === 'application/json'
         && headers.get('Content-Type') === 'application/json'
+        && body === JSON.stringify(data)
         && mode === 'no-cors'
       );
 
@@ -160,26 +148,32 @@ describe('api', () => {
 
     it('可接收fetch配置，不包括method', () => {
       const fakemethod = 'GET';
+      const headers = {
+        'x-custom-header': 'Foo',
+      };
       const mode = 'cors';
       const credentials = 'include';
       const cache = 'no-store';
 
       const fakeFetch = (input, {
         method,
+        headers: rheaders,
         mode: rmode,
         credentials: rcredentials,
         cache: rcache,
       }) => (
         input === url
         && method === 'POST'
+        && rheaders.get('x-custom-header') === 'Foo'
         && mode === rmode
         && credentials === rcredentials
-        && rcache === cache
+        && cache === rcache
       );
 
       wrapper.__set__('fetchProcess', fakeFetch);
       api.post(url, {
         method: fakemethod,
+        headers,
         mode,
         credentials,
         cache,
@@ -190,15 +184,17 @@ describe('api', () => {
   describe('GET', () => {
     const { default: api } = wrapper;
 
-    it('正确发送GET请求', () => {
+    it('正确发送GET请求，正确初始化header, mode', () => {
       const fakeFetch = (input, {
         method,
         headers,
+        body,
         mode,
       }) => (
         input === url
         && method === 'GET'
         && headers.get('Accept') === 'application/json'
+        && typeof body === 'undefined'
         && mode === 'no-cors'
       );
 
@@ -209,25 +205,31 @@ describe('api', () => {
     it('可接收fetch配置，不包括method', () => {
       const fakemethod = 'PUT';
       const mode = 'cors';
+      const headers = {
+        'x-custom-header': 'Foo',
+      };
       const credentials = 'include';
       const cache = 'no-store';
 
       const fakeFetch = (input, {
         method,
+        headers: rheaders,
         mode: rmode,
         credentials: rcredentials,
         cache: rcache,
       }) => (
         input === url
         && method === 'GET'
+        && rheaders.get('x-custom-header') === 'Foo'
         && mode === rmode
         && credentials === rcredentials
-        && rcache === cache
+        && cache === rcache
       );
 
       wrapper.__set__('fetchProcess', fakeFetch);
       api.get(url, {
         method: fakemethod,
+        headers,
         mode,
         credentials,
         cache,
@@ -238,20 +240,20 @@ describe('api', () => {
   describe('PUT', () => {
     const { default: api } = wrapper;
 
-    it('正确发送PUT请求', () => {
+    it('正确发送PUT请求，正确初始化header, body, mode', () => {
       const data = { data: 'Hello World' };
 
       const fakeFetch = (input, {
         method,
-        body,
         headers,
+        body,
         mode,
       }) => (
         input === url
         && method === 'PUT'
-        && body === JSON.stringify(data)
         && headers.get('Accept') === 'application/json'
         && headers.get('Content-Type') === 'application/json'
+        && body === JSON.stringify(data)
         && mode === 'no-cors'
       );
 
@@ -261,26 +263,32 @@ describe('api', () => {
 
     it('可接收fetch配置，不包括method', () => {
       const fakemethod = 'DELETE';
+      const headers = {
+        'x-custom-header': 'Foo',
+      };
       const mode = 'cors';
       const credentials = 'include';
       const cache = 'no-store';
 
       const fakeFetch = (input, {
         method,
+        headers: rheaders,
         mode: rmode,
         credentials: rcredentials,
         cache: rcache,
       }) => (
         input === url
         && method === 'PUT'
+        && rheaders.get('x-custom-header') === 'Foo'
         && mode === rmode
         && credentials === rcredentials
-        && rcache === cache
+        && cache === rcache
       );
 
       wrapper.__set__('fetchProcess', fakeFetch);
       api.put(url, {
         method: fakemethod,
+        headers,
         mode,
         credentials,
         cache,
@@ -291,15 +299,17 @@ describe('api', () => {
   describe('DELETE', () => {
     const { default: api } = wrapper;
 
-    it('正确发送DELETE请求', () => {
+    it('正确发送DELETE请求，正确初始化header, mode', () => {
       const fakeFetch = (input, {
         method,
         headers,
+        body,
         mode,
       }) => (
         input === url
         && method === 'DELETE'
         && headers.get('Accept') === 'application/json'
+        && typeof body === 'undefined'
         && mode === 'no-cors'
       );
 
@@ -309,26 +319,32 @@ describe('api', () => {
 
     it('可接收fetch配置，不包括method', () => {
       const fakemethod = 'POST';
+      const headers = {
+        'x-custom-header': 'Foo',
+      };
       const mode = 'cors';
       const credentials = 'include';
       const cache = 'no-store';
 
       const fakeFetch = (input, {
         method,
+        headers: rheaders,
         mode: rmode,
         credentials: rcredentials,
         cache: rcache,
       }) => (
         input === url
         && method === 'DELETE'
+        && rheaders.get('x-custom-header') === 'Foo'
         && mode === rmode
         && credentials === rcredentials
-        && rcache === cache
+        && cache === rcache
       );
 
       wrapper.__set__('fetchProcess', fakeFetch);
       api.delete(url, {
         method: fakemethod,
+        headers,
         mode,
         credentials,
         cache,

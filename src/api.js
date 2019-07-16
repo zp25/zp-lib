@@ -4,16 +4,16 @@
  */
 
 const MIME_JSON = 'application/json';
-const MIME_FORMDATA = 'multipart/form-data';
 
 /**
  * res.ok非true
  * @param {string} message
  * @ignore
  */
-function ResponseNotOkError(message) {
+function ResponseNotOkError(status, message) {
+  this.code = status;
   this.name = 'ResponseNotOkError';
-  this.message = message || 'Response not Ok Error';
+  this.message = message || 'Response not Ok';
 }
 
 ResponseNotOkError.prototype = Object.create(Error.prototype);
@@ -49,7 +49,7 @@ const handleError = (res) => {
     return res;
   }
 
-  const err = new ResponseNotOkError(`${status} - ${statusText}`);
+  const err = new ResponseNotOkError(status, statusText);
 
   return Promise.reject(err);
 };
@@ -88,27 +88,8 @@ const fetchProcess = (input, init) => (
 );
 
 /**
- * 整理请求数据，返回mime类型和规范的data格式
- * @param {(FormData|JSON)} body
- * @return {Object}
- * @private
- */
-const reqData = (body) => {
-  if (body instanceof FormData) {
-    return {
-      mime: MIME_FORMDATA,
-      data: body,
-    };
-  }
-
-  return {
-    mime: MIME_JSON,
-    data: JSON.stringify(body),
-  };
-};
-
-/**
- * 整理请求实体，添加必要的Header
+ * 整理请求实体
+ * @desc 主要限制请求实体类型，仅允许发送JSON或FormData；headers中content-type无需严格限制
  * @param {Object} init
  * @param {Object} [init.headers]
  * @param {(FormData|JSON)} [init.body]
@@ -123,7 +104,7 @@ const reqHeadersAndBody = (init = {}) => {
 
   // edge传入undefined报参数无效错误, headers改为空对象
   const h = new Headers(headers);
-  h.set('Accept', MIME_JSON);
+  h.set('accept', MIME_JSON);
 
   if (typeof body === 'undefined') {
     return {
@@ -131,12 +112,18 @@ const reqHeadersAndBody = (init = {}) => {
     };
   }
 
-  const { mime, data } = reqData(body);
-  h.set('Content-Type', mime);
+  if (body instanceof FormData) {
+    return {
+      headers: h,
+      body,
+    };
+  }
+
+  h.set('content-type', MIME_JSON);
 
   return {
     headers: h,
-    body: data,
+    body: JSON.stringify(body),
   };
 };
 
@@ -255,6 +242,5 @@ export {
   ResponseNotJSONError,
   handleError,
   handleContent,
-  reqData,
   reqHeadersAndBody,
 };
