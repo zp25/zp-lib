@@ -13,15 +13,14 @@ describe('createAction', () => {
     foo: 1,
     baz: 'baz',
   };
-  const err = new Error('an error');
 
-  it('正确新建action', () => {
+  it('仅传入type，正确新建action', () => {
     const action = createAction(type);
 
     action(payload).should.eql({ type, payload });
   });
 
-  it('payloadCreator可以过滤payload', () => {
+  it('传入payloadCreator可以过滤payload', () => {
     const payloadCreator = ({ foo, bar: { baz } }) => ({
       foo,
       baz,
@@ -31,7 +30,7 @@ describe('createAction', () => {
     action(payload).should.eql({ type, payload: payloadFiltered });
   });
 
-  it('metaCreator可以添加meta数据', () => {
+  it('传入metaCreator可以添加meta数据', () => {
     const metaCreator = ({ foo, bar: { baz } }) => ({
       foo,
       baz,
@@ -41,8 +40,9 @@ describe('createAction', () => {
     action(payload).should.eql({ type, payload, meta: payloadFiltered });
   });
 
-  it('payload为Error时正确新建action', () => {
+  it('payload为Error时添加error属性，payload记录err对象', () => {
     const action = createAction(type);
+    const err = new Error('an error');
 
     action(err).should.eql({ type, payload: err, error: true });
   });
