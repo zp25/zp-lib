@@ -1,4 +1,4 @@
-/* eslint no-underscore-dangle:0 */
+/* eslint no-underscore-dangle:0, max-classes-per-file:0 */
 
 /**
  * @typedef {Object} Observer
@@ -105,7 +105,7 @@ class Subject {
    * @public
    */
   get state() {
-    return Object.assign({}, this._state);
+    return { ...this._state };
   }
 
   /**
@@ -116,7 +116,7 @@ class Subject {
       throw new TypeError('not an Object');
     }
 
-    this._state = Object.assign({}, obj);
+    this._state = { ...obj };
   }
 
   /**
@@ -126,7 +126,10 @@ class Subject {
    */
   setState(state) {
     const prevState = this.state;
-    this._state = Object.assign({}, prevState, state);
+    this._state = {
+      ...prevState,
+      ...state,
+    };
 
     this.notify(prevState);
   }
