@@ -2,7 +2,13 @@ module.exports = (api) => {
   const presets = [];
 
   if (api.env() === 'test') {
-    presets.push('@babel/preset-env');
+    presets.push([
+      '@babel/preset-env',
+      {
+        useBuiltIns: 'usage',
+        corejs: 3,
+      },
+    ]);
   } else {
     presets.push([
       '@babel/preset-env',
