@@ -11,11 +11,14 @@ import escapeHTML from './src/escapeHTML';
 import machine from './src/machine';
 import searchParams from './src/searchParams';
 import storage from './src/storage';
+import storageProxy from './src/storage/proxy';
 import Subject, { Observer } from './src/subject';
 import {
   templater,
   templaterAsync,
 } from './src/templater';
+
+storage.proxy = storageProxy;
 
 export {
   api,

@@ -1,12 +1,12 @@
 /* eslint no-underscore-dangle: 0, no-unused-expressions: 0 */
 
 import chai from 'chai';
+import sinon from 'sinon';
 import {
-  read,
   save,
   StorageTypeError,
 } from '../src/storage/base';
-import storage from '../src/storage';
+import storage from '../src/storage/proxy';
 
 chai.should();
 
@@ -38,49 +38,18 @@ const fakestore = {
 
 global.localStorage = fakestore;
 
-describe('base', () => {
-  describe('read', () => {
-    it('序列化字符串可返序列化', () => {
-      read(fakestore, 'str').should.eql(fakestore.rawStr);
-      read(fakestore, 'obj').should.eql(fakestore.rawObj);
-    });
-
-    it('非序列化字符串返回原值', () => {
-      read(fakestore, 'illegal').should.eql(fakestore.dataset.illegal);
-    });
-
-    it('不存在返回null', () => {
-      (read(fakestore, 'null') === null).should.be.true;
-    });
-  });
-
-  describe('save', () => {
-    it('总是序列化传入值', () => {
-      save(fakestore, 'str', fakestore.rawStr).should.eql([
-        'str',
-        fakestore.dataset.str
-      ]);
-
-      save(fakestore, 'obj', fakestore.rawObj).should.eql([
-        'obj',
-        fakestore.dataset.obj,
-      ]);
-    });
-  });
-});
-
-describe('storage', function() {
+describe('storage.proxy', function() {
   describe('get', function() {
     it('无匹配item返回undefined', function() {
       const store = storage('null');
 
-      (typeof store.get('foo') === 'undefined').should.be.true;
+      (typeof store.foo === 'undefined').should.be.true;
     });
 
     it('原数据格式不合法返回undefined', function() {
       const store = storage('illegal');
 
-      (typeof store.get('foo') === 'undefined').should.be.true;
+      (typeof store.foo === 'undefined').should.be.true;
     });
 
     it('正确返回值', () => {
@@ -89,9 +58,9 @@ describe('storage', function() {
       const { foo, bar, baz } = fakestore.rawObj;
 
       [
-        store.get('foo'),
-        store.get('bar'),
-        store.get('baz'),
+        store.foo,
+        store.bar,
+        store.baz,
       ].should.eql([
         foo,
         bar,
@@ -102,32 +71,45 @@ describe('storage', function() {
 
   describe('set', function() {
     before(function() {
+      this.spy = sinon.spy(fakestore, 'setItem');
+
       this.foo = fakestore.rawStr;
       this.result = JSON.stringify({ foo: this.foo });
+    });
+
+    afterEach(function() {
+      this.spy.resetHistory();
+    });
+
+    after(function() {
+      this.spy.restore();
     });
 
     it('无匹配item时直接写入', function() {
       const store = storage('null');
       const storeThrows = storage('null', { forceUpdate: false });
 
-      store.set('foo', this.foo).should.eql(['null', this.result]);
-      storeThrows.set('foo', this.foo).should.eql(['null', this.result]);
+      store.foo = this.foo;
+      storeThrows.foo = this.foo;
+
+      this.spy.firstCall.calledWith('null', this.result).should.be.true;
+      this.spy.secondCall.calledWith('null', this.result).should.be.true;
     });
 
     it('原数据格式不合法默认新建object覆盖原值', function() {
       const illegalStore = storage('illegal');
 
-      illegalStore.set('foo', this.foo).should.eql([
-        'illegal',
-        this.result,
-      ]);
+      illegalStore.foo = this.foo;
+
+      this.spy.calledOnceWith('illegal', this.result).should.be.true;
     });
 
     it('原数据格式不合法但取消forceUpdate, 写入时抛出错误', function() {
       const illegalStore = storage('illegal', { forceUpdate: false });
 
-      const fn = () => { illegalStore.set('foo', this.foo); };
+      const fn = () => { illegalStore.foo = this.foo; };
       fn.should.throw(StorageTypeError);
+      this.spy.notCalled.should.be.true;
     });
 
     it('正确更新值', function() {
@@ -136,34 +118,52 @@ describe('storage', function() {
       }));
 
       const store = storage('obj');
-      store.set('foo', 666).should.eql(['obj', result]);
+      store.foo = 666;
+
+      this.spy.calledOnceWith('obj', result).should.be.true;
     });
   });
 
   describe('delete', function() {
     before(function() {
+      this.spy = sinon.spy(fakestore, 'setItem');
+
       this.result = JSON.stringify({});
+    });
+
+    afterEach(function() {
+      this.spy.resetHistory();
+    });
+
+    after(function() {
+      this.spy.restore();
     });
 
     it('无匹配item将新建，写入空object', function() {
       const store = storage('null');
       const storeThrows = storage('null', { forceUpdate: false });
 
-      store.delete('foo').should.eql(['null', this.result]);
-      storeThrows.delete('foo').should.eql(['null', this.result]);
+      delete store.foo;
+      delete storeThrows.foo;
+
+      this.spy.firstCall.calledWith('null', this.result).should.be.true;
+      this.spy.secondCall.calledWith('null', this.result).should.be.true;
     });
 
     it('原数据格式不合法默认新建空object覆盖原值', function() {
       const illegalStore = storage('illegal');
 
-      illegalStore.delete('foo').should.eql(['illegal', this.result]);
+      delete illegalStore.foo;
+
+      this.spy.calledOnceWith('illegal', this.result).should.be.true;
     });
 
     it('原数据格式不合法但取消forceUpdate, 删除时抛出错误', function() {
       const illegalStore = storage('illegal', { forceUpdate: false });
 
-      const fn = () => { illegalStore.delete('foo'); };
+      const fn = () => { delete illegalStore.foo; };
       fn.should.throw(StorageTypeError);
+      this.spy.notCalled.should.be.true;
     });
 
     it('正确删除值', function() {
@@ -172,29 +172,53 @@ describe('storage', function() {
       }));
 
       const store = storage('obj');
-      store.delete('foo').should.eql(['obj', result]);
+      delete store.foo;
+
+      this.spy.calledOnceWith('obj', result).should.be.true;
     });
   });
 
-  describe('keys', function() {
+  describe('Object.keys', function() {
     it('无匹配item返回空数组', function() {
       const store = storage('null');
 
-      store.keys().should.eql([]);
+      Object.keys(store).should.eql([]);
     });
 
     it('原数据格式不合法返回空数组', function() {
       const store = storage('illegal');
 
-      store.keys().should.eql([]);
+      Object.keys(store).should.eql([]);
     });
 
-    it('正确返回值', function() {
+    it('正确返回值keys', function() {
       const store = storage('obj');
 
       const result = Object.keys(fakestore.rawObj);
 
-      store.keys().should.eql(result);
+      Object.keys(store).should.eql(result);
+    });
+  });
+
+  describe('in operator', function() {
+    it('无匹配item返回false', function() {
+      const store = storage('null');
+
+      ('foo' in store).should.be.false;
+    });
+
+    it('原数据格式不合法返回false', function() {
+      const store = storage('illegal');
+
+      ('foo' in store).should.be.false;
+    });
+
+    it('可通过in判断是否包含键', function() {
+      const store = storage('obj');
+
+      ('foo' in store).should.be.true;
+      ('bar' in store).should.be.true;
+      ('baz' in store).should.be.false;
     });
   });
 });
