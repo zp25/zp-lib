@@ -48,7 +48,7 @@
     "isomorphic-fetch": "^2.2.1",
     "jsdoc": "^3.6.3",
     "jsdoc-strip-async-await": "^0.1.0",
-    "jsdom": "^15.2.1",
+    "jsdom": "^16.5.0",
     "mocha": "^6.2.2",
     "npm-check": "^5.9.0",
     "nyc": "^15.0.0",
